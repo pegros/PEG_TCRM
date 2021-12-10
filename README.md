@@ -4,21 +4,34 @@
 
 ## Introduction
 
-The **PEG_TCRM** package basically provides a single configurable Aura Lightning component enabling to leverage any Tableau CRM Dashboard
-to trigger a mass creation of records in Salesforce "core" platform. It provides an alternative to the Tableau CRM
-mass actions requiring a VF page to implement the logic, providingg 2 main benefits:
+The **PEG_TCRM** package basically provides a single configurable Aura Lightning component (**PEG_AnalyticsMassAction_CMP**)
+enabling to leverage any Tableau CRM Dashboard to trigger a mass creation of records in Salesforce "core" platform. 
+
+It provides an alternative to the Tableau CRM mass actions requiring a VF page to implement the logic, providingg 2 main benefits:
 * remain within the ccurrent browser tab / console application (e.g. stay in the current campaign record page)
 * easily contextualise the action to the current record/user (e.g. add members to the campaign record being currently displayed)
-
-![Example!](/media/massActionExample.png)
 
 Such an approach enables to replace possibly complex/slow query/filter Lightning components by scalable Tableau CRM dashboards
 to trigger mass operations on Salesforce core data. Real-life examples include:
 * Contact / Lead targeting for campaigns
-* Account owner change / portfolio reassignment
-* ...
 
-It heavily relies on the standard [wave:dashboard](https://developer.salesforce.com/docs/component-library/bundle/wave:waveDashboard/documentation) and [wave:sdk](https://developer.salesforce.com/docs/component-library/bundle/wave:sdk/example) components to respectively
+![Campaign Example!](/media/massActionExampleCampaign.png)
+
+* Account owner change / portfolio reassignment
+
+![Portfolio Example!](/media/massActionExamplePortfolio.png)
+
+It bascially provides a single mass Action button which becomes active once the component has been completely initialized (all 
+Dashboard metadata fetched and processed). When cliccking on this action, the component executes the following operations:
+* target record IDs fetch via **SAQL** based on the current dashboard filtering state 
+* target ID list filtering via a **SOQL** query to remove any already proccessed ones
+* user operation confirmation (with possible entry of addtional data to be replicated on all records to be created)
+* mass insert of records in Salesforce core database
+
+![User Confirmation Popup!](/media/massActionExamplePopup.png)
+
+
+The  heavily relies on the standard [wave:dashboard](https://developer.salesforce.com/docs/component-library/bundle/wave:waveDashboard/documentation) and [wave:sdk](https://developer.salesforce.com/docs/component-library/bundle/wave:sdk/example) components to respectively
 display a Tableau CRM Dashboard (and retrieve its filter state) and fetch its metadata (datasets used, filters available, connections set).
 
 The component works by rebuilding a SAQL query out of the dashboard metadata and its ccurrent filteringg state (it is indeed not 
