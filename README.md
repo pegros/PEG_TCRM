@@ -7,7 +7,7 @@
 The **PEG_TCRM** package basically provides a single configurable Aura Lightning component (**PEG_AnalyticsMassAction_CMP**)
 enabling to leverage any Tableau CRM Dashboard to trigger a mass creation of records in Salesforce "core" platform. 
 
-It provides an alternative to the Tableau CRM mass actions requiring a VF page to implement the logic, providingg 2 main benefits:
+It provides an alternative to the Tableau CRM mass actions requiring a VF page to implement the logic, providing 2 main benefits:
 * remain within the ccurrent browser tab / console application (e.g. stay in the current campaign record page)
 * easily contextualise the action to the current record/user (e.g. add members to the campaign record being currently displayed)
 
@@ -81,4 +81,44 @@ All Aura components include extensive documentation in their standard _auradoc_ 
 in the **Aura>c** filter of the component library on any sandbox where the package is deployed 
 (via the `/docs/component-library/overview/components` relative URL).
 
-TO BE CONTINUED
+Most of not all of the configuration happens in the App Builder. The main properties are:
+* _Dashboard Name_ containing the API Name of the Tableau CRM Dashboard to be used
+* _Dataset Name_ identifying the dataset to be used for the SAQL targeting query
+(within the possible N connected ones used by the Dashboard) 
+* _ID Field Name_ identifying the field in this dataset to be used as target IDs
+* _Use Group by?_ (optional) to implement a group by SAQL query if multiple entries may
+have the same target ID in the dataset (and reduce the impact of the max. 10 000 rows constraint)
+* _SOQL Control Query_ providing the SOQL query template to be used to filter out already
+existing records (returning target record IDs with an `in {{{ROWS}}}` where clause evaluated
+upon action) 
+* _Target Record Template_ containing a JSON object record template which will be replicated
+for each target record to be inserted (with at least the `sobjectType` property set)
+* _Target Lookup Field_ indicating the API Name of the ID field to be retrieved in the SOQL control query
+and applied on the target records.
+* _Action Input Fields_ providing an optional set of field API names to display a form
+in the action confirmation popup, the values of which being replicated on all target records.
+* _Batch Size_ settingh a max. number of rows per _insert_ operation, the component iterating
+untill all target records have been inserted. 
+
+![App Builder Configuration!](/media/massActionConfiguration.png)
+
+Note: for the _SOQL Control Query_ and the _Target Record Template_ properties, all _merge_ tokens
+supported by the ***PEG_Merge_CMP*** component may be used (e.g. `{{{recordId}}}` or `{{{userId}}}`).
+
+For the above example (to add Contacts as members to a campaign), the following properties should be set as follows:
+* _SOQL Control Query_
+```
+SELECT ContactId FROM CampaignMember WHERE CampaignId = '{{{recordId}}}' and LeadOrContactId in {{{ROWS}}}  WITH SECURITY_ENFORCED
+```
+* _Target Record Template_
+```
+{"sobjectType": "CampaignMember","CampaignId" :"{{{recordId}}}" }
+```
+* _Target Lookup Field_
+```
+ContactId
+```
+* _Action Input Fields_
+```
+[{"name":"Status","required":"true"}]
+```
