@@ -106,19 +106,19 @@ Note: for the _SOQL Control Query_ and the _Target Record Template_ properties, 
 supported by the ***PEG_Merge_CMP*** component may be used (e.g. `{{{recordId}}}` or `{{{userId}}}`).
 
 For the above example (to add Contacts as members to a campaign), the following properties should be set as follows:
-* _SOQL Control Query_
+* _SOQL Control Query_ (to fetch all Contact IDs already presente as members of the current campaign)
 ```
 SELECT ContactId FROM CampaignMember WHERE CampaignId = '{{{recordId}}}' and LeadOrContactId in {{{ROWS}}}  WITH SECURITY_ENFORCED
 ```
-* _Target Record Template_
+* _Target Record Template_ (to initialize new members for the current campaign)
 ```
 {"sobjectType": "CampaignMember","CampaignId" :"{{{recordId}}}" }
 ```
-* _Target Lookup Field_
+* _Target Lookup Field_ (to clearly set the member ID as Contacts)
 ```
 ContactId
 ```
-* _Action Input Fields_
+* _Action Input Fields_ (to ask the user for a member status upon confirmation)
 ```
 [{"name":"Status","required":"true"}]
 ```
