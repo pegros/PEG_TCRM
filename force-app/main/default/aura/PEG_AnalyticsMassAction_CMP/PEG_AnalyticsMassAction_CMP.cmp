@@ -1,0 +1,337 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId,force:hasSObjectName"
+                access="global"
+                description="Lightning component to execute a mass action based on an Einstein Analytic dashboard selection" >
+    
+    <!-- Component Main Configuration -->
+    <aura:attribute name="title"			type="String"
+                    access="global" 		
+                    description="Title of the component." />
+    <aura:attribute name="icon"				type="String"
+                    access="global" 		
+                    description="Icon of the component." />
+    <aura:attribute name="actionLabel"		type="String"
+                    access="global"
+                    description="Label of the action button." />
+    <aura:attribute name="showDebug"		type="Boolean"
+                    access="global"			default="false"
+                    description="Show debug details."/>
+    
+    <!-- Component Dashboard Configuration -->
+    <aura:attribute name="dashboardName"	type="String"
+                    access="global"
+                    description="Developer Name of the EA Dashboard to be displayed."/>
+    <aura:attribute name="dashboardHeight"	type="Integer"
+                    access="global"			default="300"
+                    description="Height in pixels of the Dashboard."/>
+    
+    <aura:attribute name="datasetName"		type="String"
+                    access="global"
+                    description="Developer Name of the EA Dataset to be used (when multiple in dashboard)."/>
+    <aura:attribute name="idFieldName"		type="String"
+                    access="global"			default="Id"
+                    description="API Name of the Member ID field in the EA dataset to be used." />
+    <aura:attribute name="useGroup"			type="Boolean"
+                    access="global"			default="false"
+                    description='Flag to add a "group by" saql statement to fetch the member IDs in the EA dataset.' />
+	<aura:attribute name="showTitle"		type="Boolean"
+                    access="global"			default="false"
+                    description="Show Dashboard Title?"/>
+    <aura:attribute name="showSharing"		type="Boolean"
+                    access="global"			default="false"
+                    description="Show Dashboard Sharing option?"/>
+    <aura:attribute name="showHeader"		type="Boolean"
+                    access="global"			default="false"
+                    description="Show Dashboard header?"/>
+    
+    <!-- Component Action Configuration -->
+    <aura:attribute name="queryBase"		type="String"
+                    access="global"
+                    description="SOQL Query base to filter IDs retrieved from EA with records already in Core. Should contain a '{{{ROWS}}}' key to put the ID list."/>
+    <aura:attribute name="queryBaseMerged"		type="String"
+                    access="private"
+                    description="SOQL Query base merged with contextual data ({{{ROWS excepted}}})."/>
+    <aura:attribute name="baseTarget"		type="String"
+                    access="global"			
+                    description='Base record template to be created as a JSON object (should contain at least "sobjectType" and "RecordTypeId" attributes).'/>
+    <aura:attribute name="baseTargetJson"	type="Object"
+                    access="private"
+                    description='Merge and JSON conversion of "baseTarget" attribute.'/>
+    <aura:attribute name="targetLookup"		type="String"
+                    access="global"			
+                    description="API Name of the lookup field on the target Object."/>
+    <aura:attribute name="fieldList"		type="String"
+                    access="global"
+                    description='List of fields to init as a JSON list of JSON objects as [{"name":"fieldApiName"}].'/>
+    <aura:attribute name="fieldListJson"	type="List"
+                    access="private"
+                    description="JSON conversion of 'fieldList' attribute."/>
+    <aura:attribute name="batchSize"		type="Integer"
+                    access="global"			default="0"
+                    description="Batch size for the insertion operation (0 value meaning that all rows are inserted at once)."/>
+    <aura:attribute name="refreshTab"		type="Boolean"
+                    access="global"	
+                    description="Flag to trigger a tab refresh after addition of new campaign members."/>
+
+    
+    <!-- Component technical lifecycle control attributes -->    
+    <aura:attribute name="dashboardId"		type="String"
+                    access="private"
+                    description="ID of the Wave Dashboard to be displayed."/>
+    <aura:attribute name="datasetId"		type="String"
+                    access="private"
+                    description="ID of the Wave Dashboard to be displayed."/>
+
+    <aura:attribute name="dbReady"			type="Boolean"
+                    access="private"		default="false"
+                    description="DB loading state to finalize init."/>
+    
+    <aura:attribute name="dbDesc"			type="Object"
+                    access="private"
+                    description="DB description."/>
+    <aura:attribute name="dsDesc"			type="Object"
+                    access="private"
+                    description="DS description."/>
+    <aura:attribute name="dsFieldDesc"		type="Object"
+                    access="private"
+                    description="DS fields description."/>
+    
+    <aura:attribute name="ds2fetch"			type="Integer"
+                    access="private"		default="0"
+                    description="Number of DS desc remaining to load."/>
+    <aura:attribute name="initDone"			type="Boolean"
+                    access="private"		default="false"
+                    description="Component init finished."/>
+    
+    
+    <!-- Component technical action control attributes -->
+    <aura:attribute name="isRunning"		type="Boolean"
+                    access="private"		default="false"
+                    description="Action running."/>
+    
+    <aura:attribute name="saqlIdList"		type="List"
+                    access="private"
+                    description="List of IDs extracted from EA."/>
+    <aura:attribute name="soqlIdList"		type="List"
+                    access="private"
+                    description="List of IDs (to be) added in Campaign."/>
+    <aura:attribute name="runStep"			type="String"
+                    access="private"		default="0"
+                    description="Progress bar step."/>
+    
+    <aura:attribute name="actionProgress"	type="Integer"
+                    access="private"		default="0"
+                    description="Current progress %age of final action operation (when batchable)."/>
+    
+    <!--
+	<aura:attribute name="actionError"		type="String"
+                    access="private"
+                    description="Action error."/>
+	-->
+    <aura:attribute name="actionResult"		type="Object"
+                    access="private"
+                    description="Message of the last action triggered."/>
+    
+    <!--
+    <aura:attribute name="SaqlErrorMsg"		type="String"
+                    access="private"		default="{!$Label.c.PEG_AnalyticsMassActionSaqlError}"
+                    description="SQL Error Message."/>
+    <aura:attribute name="SoqlErrorMsg"		type="String"
+                    access="private"		default="{!$Label.c.PEG_AnalyticsMassActionSoqlError}"
+                    description="SQL Error Message."/>
+    <aura:attribute name="DmlErrorMsg"		type="String"
+                    access="private"		default="{!$Label.c.PEG_AnalyticsMassActionDmlError}"
+                    description="SQL Error Message."/>
+    -->
+    
+    <!-- Component debug attributes -->    
+    <aura:attribute name="saqlQuery"		type="String"
+                    access="private"
+                    description="SAQL Query generated."/>
+    <aura:attribute name="saqlResults"		type="String"
+                    access="private"
+                    description="SAQL results received."/>
+    <aura:attribute name="soqlQuery"		type="String"
+                    access="private"
+                    description="SOQL Query generated."/>
+
+    <!-- Component Initialisation -->
+    <aura:handler	name="init"			value="{!this}"
+					action="{!c.handleInit}"
+					description="Init of component (EA description requests)."/>
+    <aura:handler	name="change"		value="{!v.dbReady}"
+                  	action="{!c.handleDBLoaded}"
+                  	description="Finalisation of the component init."/>
+
+    
+	<!-- Utilities -->    
+    <wave:sdk			aura:id="analyticsSDK"/>
+    <c:PEG_SOQL_CMP		aura:id="soqlUtil"/>
+    <c:PEG_Merge_CMP	aura:id="mergeUtil"
+                     	recordId="{!v.recordId}"
+                     	sObjectName="{!v.sObjectName}"/>
+    
+    
+    <!-- Component Display -->
+    <lightning:card title="{!v.title}" iconName="{#v.icon}">
+        
+        <!-- Action trigger button -->
+        <aura:set attribute="actions">          
+    		<lightning:button	variant="neutral"			label="{!v.actionLabel}"
+                          		title="{!v.actionLabel}"	disabled="{! or(!v.initDone,v.isRunning)}"	
+                          		onclick="{!c.launchAction}"/>
+        </aura:set>
+        
+        <!-- Debug section -->
+        <aura:set attribute="footer">
+            <aura:if isTrue="{#v.showDebug}">
+            	<div class="slds-text-align_left">
+                <dl class="slds-list_horizontal slds-wrap">
+            		<dt class="slds-item_label slds-text-color_weak slds-truncate slds-text-align_right" >
+                        <lightning:icon iconName="utility:info_alt" alternativeText="Information" size="x-small" title="Information" /></dt>
+                    <dd class="slds-item_detail slds-text-align_left" >
+                		<a href="/docs/component-library/bundle/c:PEG_AnalyticsMassAction_CMP/documentation">
+                            Access documentation.</a></dd>
+                    <dt class="slds-item_label slds-text-color_weak slds-truncate slds-text-align_right" >
+                        DB Name / ID </dt>
+            		<dd class="slds-item_detail slds-text-align_left" >
+                        {!v.dashboardName} / {!v.dashboardId}</dd>
+                    <dt class="slds-item_label slds-text-color_weak slds-truncate slds-text-align_right" >
+                		DS Name / ID</dt>
+            		<dd class="slds-item_detail slds-text-align_left" >
+                		{!v.datasetName} / {!v.datasetId}</dd>
+                    <dt class="slds-item_label slds-text-color_weak slds-truncate slds-text-align_right" >
+                        ID field / Use Group</dt>
+            		<dd class="slds-item_detail slds-text-align_left" >
+                        {#v.idFieldName} / {#v.useGroup}</dd>
+                    <dt class="slds-item_label slds-text-color_weak slds-truncate slds-text-align_right" >
+                		SAQL query</dt>
+            		<dd class="slds-item_detail slds-text-align_left" >
+                		{!v.saqlQuery}</dd>
+                    <dt class="slds-item_label slds-text-color_weak slds-truncate slds-text-align_right" >
+                		SAQL results</dt>
+            		<dd class="slds-item_detail slds-text-align_left" >
+                		{!v.saqlResults.results.records.length}</dd>
+                    <dt class="slds-item_label slds-text-color_weak slds-truncate slds-text-align_right" >
+                		IDs from SAQL</dt>
+            		<dd class="slds-item_detail slds-text-align_left" >
+                		{!v.saqlIdList.length}</dd>
+                    <dt class="slds-item_label slds-text-color_weak slds-truncate slds-text-align_right" >
+                		SOQL query</dt>
+            		<dd class="slds-item_detail slds-text-align_left" >
+                		{!v.soqlQuery}</dd>
+                    <dt class="slds-item_label slds-text-color_weak slds-truncate slds-text-align_right" >
+                		IDs filtered</dt>
+            		<dd class="slds-item_detail slds-text-align_left" >
+                		{!v.soqlIdList.length}</dd>
+                    <dt class="slds-item_label slds-text-color_weak slds-truncate slds-text-align_right" >
+                		Form Fields</dt>
+            		<dd class="slds-item_detail slds-text-align_left" >
+                		#{!v.fieldListJson.length} --> {!v.fieldList}</dd>
+                </dl>
+            </div>
+            </aura:if>
+        </aura:set>
+        
+        <!-- Action popup -->
+        <aura:if isTrue="{!v.isRunning}">
+            <div class="modal-glass slds-backdrop fadein slds-backdrop--open"
+                 tabindex="-1" data-aura-rendered-by="3230:0" style="opacity: 0.8;">
+            </div>
+            <section	role="dialog" aria-label="Confirmation Popup" aria-modal="true"
+						aria-describedby="modal-content-id-1"
+						class="slds-modal slds-fade-in-open">
+        		<div class="slds-modal__container"  >
+                   	<header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close" variant="bare"
+                                              class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                                              onclick="{!c.cancelAction}" alternativeText="Close" title="Close" />
+
+        				<lightning:progressIndicator	currentStep="{!v.runStep}"
+                                       					type="base"	variant="base"
+                                       					hasError="{!v.actionError.length > 0}" >
+                  <lightning:progressStep value="1" label="{!$Label.c.PEG_AnalyticsMassActionStep1}"/>
+        					<lightning:progressStep value="2" label="{!$Label.c.PEG_AnalyticsMassActionStep2}"/>
+        					<lightning:progressStep value="3" label="{!$Label.c.PEG_AnalyticsMassActionStep3}"/>
+        					<lightning:progressStep value="4" label="{!$Label.c.PEG_AnalyticsMassActionStep4}"/>
+    					</lightning:progressIndicator>
+                   	</header>
+                    
+                   	<div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1" style="min-height:50vh !important;">
+                        <aura:if isTrue="{!v.actionResult.display}">
+            				<c:PEG_Message_CMP	title="{!v.actionResult.title}"
+                            					message="{!v.actionResult.message}"
+                            					error="{!v.actionResult.error}"
+                            					variant="{!v.actionResult.variant}" />
+						</aura:if>
+                        
+                        <aura:if isTrue="{! and(v.runStep == '3', v.actionResult.variant != 'error')}">
+                       		
+                            <div class="slds-text-align_left slds-text-color_default slds-p-horizontal_x-small slds-p-vertical_x-small">
+                           		{!format($Label.c.PEG_AnalyticsMassActionMessage, v.saqlIdList.length, v.soqlIdList.length)}</div>
+                      	
+                        	<lightning:recordEditForm aura:id="record-edit-form"
+                              	recordTypeId="{!v.baseTargetJson.RecordTypeId}"
+                              	objectApiName="{!v.baseTargetJson.sobjectType}"
+                              	onsubmit="{!c.handleSubmit}"
+                              	onload="{!c.handleLoad}">
+        						<lightning:messages/>
+        						<aura:iteration items="{!v.fieldListJson}" var="eachField"> 
+            						<lightning:inputField	aura:id="{!'field-' + eachField.name}"
+                                  							fieldName="{!eachField.name}"
+                                                      		required="{!eachField.required}"
+                                  							onchange="{!c.handleFieldChange}" />
+        						</aura:iteration>
+        
+        						<lightning:buttonGroup	class="slds-m-top_small slds-align_absolute-center" >
+        							<lightning:button	iconName="utility:close"
+														label="{!$Label.c.PEG_AnalyticsMassActionCancel}" 
+														onclick="{!c.cancelAction}" />
+                                	<lightning:button	type="submit"
+                                                  		iconName="utility:check"
+                                                  		variant="brand"
+                                                  		disabled="{! or(v.soqlIdList.length == 0, v.actionError.length > 0)}"
+                                                  		label="{!$Label.c.PEG_AnalyticsMassActionValidate}" />
+        						</lightning:buttonGroup>
+
+                                <aura:if isTrue="{!v.runStep > 3}">
+                                	<lightning:spinner alternativeText="Loading" size="medium" />
+                            	</aura:if>
+							</lightning:recordEditForm>
+                        
+						</aura:if>
+                        
+						<aura:if isTrue="{! and(v.runStep == '4', v.actionResult.variant != 'error')}">
+                            <div class="slds-var-p-around_small">
+                            	<lightning:progressBar value="{!v.actionProgress}" size="large" />
+							</div>
+                        </aura:if>
+
+                   	</div>
+                    <!--
+                   	<footer class="slds-modal__footer">
+                       	<lightning:buttonIcon	iconName="utility:close"		variant="border-filled"
+                                             	alternativeText="Cancel"		title="Cancel"
+                                            	onclick="{!c.cancelAction}" />
+           				<lightning:buttonIcon	iconName="utility:check"		variant="brand"
+                                             	alternativeText="Validate"	title="Validate"
+                                             	disabled="{! or(v.soqlIdList.length == 0, v.actionError.length > 0)}"
+                                            	onclick="{!c.confirmAction}"/>
+    				</footer>
+					-->
+               	</div>
+           	</section>
+        </aura:if>
+
+        <!-- Main Dashboard Content -->
+        <wave:waveDashboard aura:id="analyticsDB"
+                            height="{#v.dashboardHeight}"
+                            dashboardId="{#v.dashboardName}"
+                            isLoaded="{!v.dbReady}"
+                            showTitle="{#v.showTitle}"
+                            showSharing="{#v.showSharing}"
+                            showHeader="{#v.showHeader}" />
+        <!-- @TODO: restore configuration via devName instead of ID -->
+    	<!-- developerName="{#v.dashboardName}" -->
+	</lightning:card>
+     
+</aura:component>

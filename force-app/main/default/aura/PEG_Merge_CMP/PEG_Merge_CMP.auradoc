@@ -1,0 +1,136 @@
+<aura:documentation>
+	<aura:description>
+    <div class="slds-m-top_large">
+    <h4>Overview</h4>
+    <p>The <code>&lt;c:PEG_Merge_CMP&gt;</code> component is a pure utility Lightning component.
+        Its main purpose is to provide other Lightning components with a way to merge contextual
+        information within a string template, using keywords to identify the source of the information.</p>
+    <p>Two methods are available, <code>merge</code> to execute this operation on a string template
+        and <code>trigger</code> to fire a Lightning event after having executed a merge on its parameters.</p>
+    <p>In order to call these methods, the requesting Lightning component just has to instanciate
+        the <code>&lt;c:PEG_Merge_CMP&gt;</code> within its body and give it a unique
+        <code>aura:id</code> to be able to find it easily to call its methods.</p>
+<pre>&lt;c:PEG_Merge_CMP  aura:id="mergeUtil"/&gt;</pre>
+    <br/>
+    </div>
+     
+    <div class="slds-m-top_large">
+    <h4>Merge Syntax</h4>
+    <p>The merging of information uses keywords marked via <code>{{{xxxx}}}</code> triple curly
+        brackets. Multiple options are available:</p>
+    <ul>
+    <li><code>User</code> references the current User, e.g. <code>{{{User.Id}}}</code> for its ID or 
+        <code>{{{User.Name}}}</code> for its Name</li>
+    <li><code>Object</code> references the current tab Object (when in a Lightning record page),
+        e.g. <code>{{{Object.Id}}}</code> for its ID or <code>{{{Object.Name}}}</code> for its Name,</li>
+    <li><code>sObjectName</code> references the current Object name (when in a Lightning record or
+        home page, e.g. <code>{{{sObjectName}}}</code>,</li>
+    <li><code>recordId</code> references the current Object ID (when in a Lightning record page),
+        <code>{{{recordId}}}</code> being more efficient than <code>{{{Object.Id}}}</code>,</li>
+    <li><code>Row</code> references a JSON object provided as additional input when calling the merge
+        method, typically a related object or a table row on which an action is triggered or the list
+        of selected rows in a data table, e.g. as <code>{{{Row.Id}}}</code>,</li>
+    <li><code>Context</code> references the current Context data managed by the
+        <code>&lt;c:PEG_Context_CMP&gt;</code> component, which may correspond to any
+        custom information shared among multiple Lightning components,</li>
+    <li><code>Now</code> references the current timestamp, e.g. as <code>{{{Now}}}</code>.
+    </li>
+    </ul>
+<pre>SELECT Subject, Description
+  FROM Task
+ WHERE WhatId  = '{{{recordId}}}'
+   AND OwnerId = '{{{User.Id}}}'</pre>
+    <p>Notes:</p>
+    <ul>
+    <li><code>User</code> and <code>Object</code> keywords leverage the Lightning Data Service
+        to fetch the necessary information to be merged. This means that the <code>Object</code>
+        does not work in Lightning record pages for objects not supported by the LDS.</li>
+    <li>On the <code>User</code> and <code>Object</code> keywords, the merge syntax should be 
+        <code>{{{User.attribute__c}}}</code> or <code>{{{Object.attribute__c}}}</code> where
+        attribute__c is the API name of the target field.</li>
+    <li>On these keywords and the <code>Row</code> and <code>Context</code> keywords, the merge syntax may be more
+        complex, e.g. <code>{{{Row.Owner.Name}}}</code> (if Owner.Name is set on the Row object
+        provided !) or <code>{{{User.Manager.Name}}}</code> (when leveraging a lookup relationship).</li>
+    </ul>
+    <br/>
+    </div>
+    
+    
+    <div class="slds-m-top_large">
+    <h4>Reguesting a merge</h4>
+    <p>In order to trigger a merge query, just call the <code>merge</code> method on the 
+        <code>&lt;c:PEG_Merge_CMP&gt;</code> component, providing the string template to
+        process, an optional "Row" JSON object and a callback method to process the results
+        (with two JSON object parameters containing respectively the result of the merge or
+        its error).</p>
+<pre>component.find('mergeUtil').merge(
+     "SELECT Subject, Description FROM Task WHERE WhatId = '{{{Row.Id}}}' AND OwnerId = '{{{User.Id}}}'",
+     {"Id":"xxxx","Name":"XXX"},
+     function(mergeResult,mergeError) {
+        if (mergeResult) {
+           // process OK (in mergeResult object)
+           ...
+        } else {
+           // process KO (in mergeError object)
+           ...
+        }});</pre>
+    <br/>
+    </div>
+        
+    <div class="slds-m-top_large">
+    <h4>Requesting a merged Event Trigger</h4>
+    <p>In order to trigger a Lightning event with parameters merged with context information,
+        just call the <code>trigger</code> method on the <code>&lt;c:PEG_SOQL_CMP&gt;</code>
+        component, providing a JSON object describing the event to trigger, an optional "Row" JSON object
+        and an optional callback method to process the results (with two JSON object parameters
+        containing respectively the result of the merge or its error).</p>
+<pre>component.find('mergeUtil').trigger(
+     {"name":"e.force:showToast","params":{"type":"info","title":"Success!", "message":"The User is {{{User.Name}}} and row {{{Row.Name}}}"}},
+     {"Id":"xxxx","Name":"XXX"},
+     function(mergeResult,mergeError) {
+        if (mergeResult) {
+           // process OK (in mergeResult object)
+           ...
+        } else {
+           // process KO (in mergeError object)
+           ...
+        });</pre>
+    <p>The event parameters should be provided as a JSON object with two attributes</p>
+    <ul>
+    <li><code>name</code> with the actual name of the Lightning event to be fired (as
+        input to the <code>$A.get(....)</code> statement).</li>
+    <li><code>params</code> with the JSON parameters to be set for this event (as
+        input to the <code>event.setParams(....)</code> statement).</li>
+    </ul>
+    <br/>
+    </div>
+        
+    <div class="slds-m-top_large">
+        <h4>Legal Notice</h4>
+        <p>Author: P-E GROS / Sept. 2020</p>
+        <br/>
+        <p>MIT License</p>
+        <br/>
+        <p>Copyright (c) 2020 pegros</p>
+        <br/>
+        <p> Permission is hereby granted, free of charge, to any person obtaining a copy
+            of this software and associated documentation files (the "Software"), to deal
+            in the Software without restriction, including without limitation the rights
+            to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+            copies of the Software, and to permit persons to whom the Software is
+            furnished to do so, subject to the following conditions:</p>
+        <br/>
+        <p> The above copyright notice and this permission notice shall be included in all
+            copies or substantial portions of the Software.</p>
+        <br/>
+        <p> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+            IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+            FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+            AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+            LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+            OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+            SOFTWARE.</p>
+    </div>
+        
+    </aura:description>
+</aura:documentation>

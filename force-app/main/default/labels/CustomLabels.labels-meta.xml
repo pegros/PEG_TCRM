@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>PEG_AnalyticsMassActionCancel</fullName>
+        <categories>PEG,Analytics, Lightning,Button</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>PEG_AnalyticsMassActionCancel</shortDescription>
+        <value>Cancel</value>
+    </labels>
+    <labels>
+        <fullName>PEG_AnalyticsMassActionDmlError</fullName>
+        <categories>PEG, Analytics, Lightning, Error</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>PEG_AnalyticsMassActionDmlError</shortDescription>
+        <value>DML Operation (Insert) Error</value>
+    </labels>
+    <labels>
+        <fullName>PEG_AnalyticsMassActionMessage</fullName>
+        <categories>PEG, Analytics, Component</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>PEG_AnalyticsMassActionMessage</shortDescription>
+        <value>Sur vos {0} élément(s) ciblés dans le tableau de bord, {1} ne sont pas actuellement déjà traités..</value>
+    </labels>
+    <labels>
+        <fullName>PEG_AnalyticsMassActionSaqlError</fullName>
+        <categories>PEG, Analytics, Lightning, Error</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>PEG_AnalyticsMassActionSaqlError</shortDescription>
+        <value>SAQL Query Error</value>
+    </labels>
+    <labels>
+        <fullName>PEG_AnalyticsMassActionSizeWarning</fullName>
+        <categories>PEG, Aura, Lightning, Einstein, Analytics, message</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>PEG_AnalyticsMassActionSizeWarning</shortDescription>
+        <value>Vous avez atteint la limite d&apos;extraction du Tableau de Bord: Seuls les 10 000 premiers enregistrements seront traités !</value>
+    </labels>
+    <labels>
+        <fullName>PEG_AnalyticsMassActionSoqlError</fullName>
+        <categories>PEG, Analytics, Lightning, Error</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>PEG_AnalyticsMassActionSoqlError</shortDescription>
+        <value>SOQL Query Error</value>
+    </labels>
+    <labels>
+        <fullName>PEG_AnalyticsMassActionStep1</fullName>
+        <categories>PEG, Analytics,</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>PEG_AnalyticsMassActionStep1</shortDescription>
+        <value>Filter situation fetched</value>
+    </labels>
+    <labels>
+        <fullName>PEG_AnalyticsMassActionStep2</fullName>
+        <categories>PEG, Analytics, Lightning</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>PEG_AnalyticsMassActionStep2</shortDescription>
+        <value>Target SAQL data fetched</value>
+    </labels>
+    <labels>
+        <fullName>PEG_AnalyticsMassActionStep3</fullName>
+        <categories>PEG, Analytics, Lightning</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>PEG_AnalyticsMassActionStep3</shortDescription>
+        <value>Target SOQL data fetched</value>
+    </labels>
+    <labels>
+        <fullName>PEG_AnalyticsMassActionStep4</fullName>
+        <categories>PEG,Analytics, Lightning</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>PEG_AnalyticsMassActionStep4</shortDescription>
+        <value>Operation executed</value>
+    </labels>
+    <labels>
+        <fullName>PEG_AnalyticsMassActionValidate</fullName>
+        <categories>PEG,Analytics, Lightning,Button</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>PEG_AnalyticsMassActionValidate</shortDescription>
+        <value>Validate</value>
+    </labels>
+</CustomLabels>

@@ -1,0 +1,77 @@
+<design:component label="PEG EA Mass Actions">
+    <design:attribute name="title"
+                      label="Component Title"
+                      default="Targeting"
+                      description="Title to display (supports custom labels as $Label.c.LabelName)." />
+    <design:attribute name="icon"
+                      label="Component Icon"
+                      default="standard:dashboard_ea"
+                      description="Icon name to display." />
+    
+    
+    <design:attribute name="dashboardName"
+                      label="Dashboard Name"
+                      description="Developer Name of the dashboard to display." />
+    <design:attribute name="dashboardHeight"
+                      label="Dashboard Height"
+                      default="300"
+                      description="Display Height in pixels." />
+    <design:attribute name="datasetName"
+                      label="Dataset Name"
+                      description="Developer Name of the dataset to use to extract members (optional, 1st dataset of the dataset being used by default)." />
+    <design:attribute name="idFieldName"
+                      label="ID Field Name"
+                      default="Id"
+                      description="API Name of the dataset field containing the member ID." />
+    <design:attribute name="useGroup"
+                      label='Use "Group By?"'
+                      default="false"
+                      description='Flag to add a "group by" saql statement to fetch the member IDs (if the dataset has multiple lines with the same member ID).' />
+	<design:attribute name="showTitle"
+                      label="Show Dashboard Title?"
+                      default="false" />
+    <design:attribute name="showSharing"
+                      default="false"
+                      label="Show Dashboard Sharing?"/>
+    <design:attribute name="showHeader"	
+                      default="false"
+                      label="Show Dashboard header?"/>
+    
+    
+    <design:attribute name="actionLabel"
+                      label="Action Label"
+                      default="Add"
+                      description="Label for the 'add' button (supports custom labels as $Label.c.LabelName)." />
+	<design:attribute name="queryBase"
+                      label="SOQL Control Query"
+                      default="SELECT Id, Compte__c FROM DemandeGestion__c WHERE Compte__c in {{{ROWS}}} AND Termine__c = false WITH SECURITY_ENFORCED"
+                      description="SOQL Query base to filter IDs retrieved from EA with records already in Core. Should contain a '{{{ROWS}}}' key to put the ID list." />
+    <design:attribute name="baseTarget"
+                      label="Target Record Template"
+                      default='{"sobjectType": "DemandeGestion__c", "RecordTypeId": "0125E000000DCHp"}'
+                      description='Base record template to be created as a JSON object (should contain at least "sobjectType" and "RecordTypeId" attributes).' />
+    <design:attribute name="targetLookup"
+                      label="Target Lookup field"
+                      default="Compte__c"
+                      description="API Name of the lookup field on the target records." />
+    <design:attribute name="fieldList"
+                      label="Action Input Fields"
+                      default='[{"name":"MotifDemande__c"},{"name":"NouveauProprietaire__c","required":"true"}]'
+                      description='List of fields to init as a JSON list of JSON objects as [{"name":"fieldApiName"}].' />
+	<design:attribute name="batchSize"
+                      label="Batch Size"
+                      default="0"
+                      description="Batch size for the insertion operation (0 value meaning that all rows are inserted at once)."/>
+    
+    <design:attribute name="refreshTab"
+                      label="Refresh Tab after Add?"
+                      default="false"
+                      description="Flag to trigger a tab refresh after addition of new campaign members."/>
+
+    
+    <design:attribute name="showDebug"
+                      label="Show Debug?"
+                      default="false"
+                      description="Provides debug information in the component footer." />
+
+</design:component>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Bypass_FLS__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Flag to authorize the matched query to bypass FLS.</description>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Bypass FLS</label>
+    <type>Checkbox</type>
+</CustomField>

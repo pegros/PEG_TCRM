@@ -1,0 +1,52 @@
+<aura:component access="global"
+                description="Component tracking the filling of a set of fields.">
+	
+    <!-- Global component configuration -->
+    <aura:attribute name="title"      type="String"  access="global" 
+                    description="Component title." />
+    <aura:attribute name="message"    type="String"  access="global" 
+                    description="Component detailed message." />
+    <aura:attribute name="error"      type="List"  access="global" 
+                    description="Component error object." />
+	<aura:attribute name="variant"    type="String"  access="global" 
+                    description="Component variant (info, success, warning or error)." />
+    <!-- @TODO : not fully implemented yet in HTML part -->
+    <aura:attribute name="theme"      type="String"  access="global"  default="strong"
+                    description="Component theme (strong, light) showing more or less variant color." />
+    
+    <!-- Internal technical attributes -->
+    <aura:attribute name="configuration"  type="Object"  access="private" 
+                    default='{"iconName":"info_alt","iconVariant":"inverse","theme":"slds-theme_info"}'
+                    description="Component Display Parameters." />
+    <aura:attribute name="errorMessage"   type="String"  access="private"  default="" 
+                    description="Component error message displayed." />
+    
+    <!-- Component variant initialisation and change handling -->
+    <aura:handler name="init"   value="{!this}"      action="{!c.doInit}"/>
+    <aura:handler name="change" value="{!v.variant}" action="{!c.updateConfiguration}"/>
+    <aura:handler name="change" value="{!v.error}"   action="{!c.updateErrorMessage}"/>
+   
+    <!-- Component display slds-p-horizontal_xx-small -->
+    <div class="{! 'slds-box slds-box_xx-small ' + v.configuration.theme}"
+         style="word-wrap: break-word !important; border-color: transparent !important;">
+    	<div class="slds-media slds-p-around_small" style="width:100% !important;">
+            <div class="slds-media__figure">
+     			<lightning:icon iconName="{! 'utility:' + v.configuration.iconName}"
+                                alternativeText="{!v.configuration.iconName}"
+                                variant="{!v.configuration.iconVariant}"  size="small" />
+    		</div>
+    		<div class="slds-media__body">
+                <h2 class="slds-text-heading_small">
+                    <lightning:formattedText value="{!v.title}" />
+                </h2>
+                <p>
+                    <lightning:formattedText value="{!v.message}" />  
+                </p>
+                <p>
+                    <lightning:formattedText value="{!v.errorMessage}" />  
+                </p>
+			</div>
+        </div>
+        {!v.body}
+    </div>
+</aura:component>

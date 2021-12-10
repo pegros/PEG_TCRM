@@ -1,0 +1,30 @@
+<aura:component implements="lightning:backgroundUtilityItem,flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes"
+                access="global"
+                controller="PEG_Configuration_CTL"
+                description="Console utility toolbar hidden component to initialise the context to be used by various components.">
+    
+    <!-- Configuration attributes -->
+    <aura:attribute name="recordTypesStr"	type="String" 
+                    access="global"
+                    description="List of record type developer names for which IDs should be loaded (as a JSON stringified list)."/>
+	<aura:attribute name="listViewStr"  	type="String" 
+                    access="global"
+                    description="List of list view names for which IDs should be loaded (as a JSON stringified list)."/>
+    <aura:attribute name="ObjReciprocalRole" type="String" 
+                    access="global"
+                    description="List of Reciprocal Role names for which IDs should be loaded (as a JSON stringified list)."/>
+    <aura:attribute name="reportStr" type="String" 
+                    access="global"
+                    description="List of Report Dev names for which IDs should be loaded (as a JSON stringified list)."/>
+	<aura:attribute name="picklistStr" type="String" 
+                    access="global"
+                    description='List of Picklist names for which values/labels should be loaded (as a JSON stringified list of "ObjetApiName.FieldApiName" names).'/>
+    
+    <!-- Component Initialisation -->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"
+                  description="Init of component: parsing of configuration parameter and loading of data."/>
+    
+	<!-- Component Utilities -->
+    <c:PEG_Context_CMP	aura:id="contextMgr" />
+	
+</aura:component>

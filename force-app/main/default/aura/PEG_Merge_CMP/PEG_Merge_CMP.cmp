@@ -1,0 +1,85 @@
+<aura:component implements="force:hasRecordId,force:hasSObjectName"
+                access="global"
+                description="Component able to merge contextual data into a string template with {{{xxx}}} keys.">
+
+    
+    <!-- LDS User info fetch -->
+    <aura:attribute name="fetchUser" type="Boolean"
+                    default="false"  access="private"
+                    description="User info fetch required ?" /> 
+    <aura:attribute name="userId"        type="String"
+                    description='ID of the current User.'/> 
+    <aura:attribute name="userFields"    type="List"
+                    description='List of field names on current User requested for merging.' />
+    <aura:attribute name="userRecordFields"   type="Object"
+                    description="User record with field values (via LDS)." />
+    <aura:attribute name="userRecordError"    type="String"
+                    description="User record fetch error (via LDS)."/>
+     
+    <!-- LDS Object info fetch -->
+    <aura:attribute name="fetchObject" type="Boolean"
+                    default="false"  access="private"
+                    description="Object info fetch required ?" /> 
+    <aura:attribute name="objectFields"  type="List"
+                    description='List of field names on current Object requested for merging.' />
+    <aura:attribute name="objectRecordFields"   type="Object"
+                    description="Current record with field values (via LDS)." />
+    <aura:attribute name="objectRecordError"    type="String"
+                    description="Current record fetch error (via LDS)."/>
+
+    <!-- PEG Context init completion wait -->
+    <aura:attribute name="fetchContext" type="Boolean"
+                    default="false" 	access="private"
+                    description="Context Initialisation required ?" /> 
+   
+    <!-- Technical processing Context --> 
+    <aura:attribute name="context"   type="Object"
+                    access="private"
+                    description="Temporary technical processing context storage to manage asynch data fetch (Context and LDS)." />   
+
+	<!-- String Template Merge method -->  
+    <aura:method name="merge" action="{!c.triggerMerge}"
+                 description="Method enabling to trigger a merge.">
+        <aura:attribute name="template" type="String" required="true" 
+                        description="String template containing {{{xxx}}}} keys to merge." />
+        <aura:attribute name="row" type="Object" required="false" 
+                        description="Optional contextual object to be used as input for {{{Row.xxx}}} keys."/>
+        <aura:attribute name="callback" type="Function" required="true"
+                        description="Callback method called when query results are returned. 2 object parameters expected for this callback : result and error."/>
+    </aura:method>
+
+    <!-- Merged Action Trigger method --> 
+    <aura:method name="trigger" action="{!c.triggerAction}"
+                 description="Method enabling to trigger a lightning event with parameters using merged data.">
+        <aura:attribute name="action" type="Object" required="true" 
+                        description='Action object as {"name"://eventName//,"params":{//eventParams//} } with //eventParams// including {{{xxx}}}} keys to merge.' />
+        <aura:attribute name="row" type="Object" required="false" 
+                        description="Optional contextual object to be used as input for {{{Row.xxx}}} keys."/>
+        <aura:attribute name="callback" type="Function" required="false"
+                        description="Callback method called when event is triggered." />
+    </aura:method>    
+    
+    
+    <!-- Utilities -->
+    <c:PEG_Context_CMP aura:id="contextMgr"
+                       onValueUpdate="{!c.triggerContextMerge}"/>
+    <lightning:notificationsLibrary aura:id="notifLib"/>
+
+    <!-- LDS Data Fetch -->
+    <aura:if isTrue="{!v.fetchUser}" >
+    <force:recordData recordId="{!v.userId}"
+                      fields="{!v.userFields}"
+                      targetFields="{!v.userRecordFields}"
+                      targetError="{!v.userRecordError}" 
+                      recordUpdated="{!c.triggerUserMerge}" />
+    </aura:if>
+    
+    <aura:if isTrue="{!v.fetchObject}" >
+    <force:recordData recordId="{!v.recordId}"
+                      fields="{!v.objectFields}"
+                      targetFields="{!v.objectRecordFields}"
+                      targetError="{!v.objectRecordError}" 
+                      recordUpdated="{!c.triggerObjectMerge}" />
+    </aura:if>    
+    
+</aura:component>

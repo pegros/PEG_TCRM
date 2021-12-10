@@ -1,0 +1,16 @@
+<design:component label="PEG Context Loader">
+	
+	<design:attribute	name="recordTypesStr"
+                        label="Record Types"
+                    	description="List of record type developer names for which IDs should be loaded (as a JSON stringified list)."/>
+	<design:attribute	name="listViewStr" 
+                      	label="List Views"
+                    	description="List of list view names for which IDs should be loaded (as a JSON stringified list)."/>
+    <design:attribute	name="reportStr" 
+                      	label="Reports"
+                    	description="List of Report Developer Names for which IDs should be loaded (as a JSON stringified list)."/>
+    <design:attribute	name="picklistStr"
+                      	label="Picklist Values" 
+						description='List of Picklist names for which values/labels should be loaded (as a JSON stringified list of "ObjetApiName.FieldApiName" names).'/>
+	
+</design:component>

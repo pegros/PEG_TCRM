@@ -1,0 +1,49 @@
+<aura:component controller="PEG_SoqlOperation_CTL"
+                description="Component enabling to fetch data via a SOQL statement.">
+    
+    <!-- Methods -->
+    <aura:method name="runQuery" action="{!c.doRunQuery}"
+                 description="Method enabling to execute a query.">
+        <aura:attribute name="queryString"   type="String"   required="true" 
+                        description="SOQL statement to execute." />
+        <aura:attribute name="bypassFLS"     type="Boolean"  default="false" 
+                        description="Bypass FLS when executing query." />
+        <aura:attribute name="bypassSharing" type="Boolean"  default="false" 
+                        description="Bypass Sharing when executing query." />
+        <aura:attribute name="queryType"     type="String"   default="false" 
+                        description="When requesting a byPass, a valid queryType should be provided (see PEG_Query__mdt)." />
+        <aura:attribute name="isStorable"    type="Boolean"  default="false" 
+                        description="Query action storable mode activation." />
+        <aura:attribute name="isBackground"  type="Boolean"  default="false" 
+                        description="Query action background mode activation." />
+        <aura:attribute name="callback"      type="Function" required="true"
+                        description="Callback method called when query results are returned. 2 object parameters expected for this callback : result and error."/>
+    </aura:method>
+    
+    <aura:method name="runDML" action="{!c.doRunDML}"
+                 description="Method enabling to execute a DML.">
+        <aura:attribute name="dmlOperation" type="String" required="true" 
+                        description="DML operation to execute (insert, update, upsert, delete, undelete)." />
+        <aura:attribute name="itemList"     type="List"   required="true" 
+                        description="List of sObject items on which to execute the DML operation." />
+        <aura:attribute name="callback" type="Function" required="true"
+                        description="Callback method called when query results are returned. 2 object parameters expected for this callback : result and error."/>
+    </aura:method>
+    
+    <!-- Work in Progress -->
+    <!--
+    <aura:method name="runMultiQuery" action="{!c.doRunMultiQuery}"
+                 description="Method enabling to execute a query.">
+        <aura:attribute name="queryList" type="List" required="true" 
+                        description="List of SOQL query objects to execute." />
+        <aura:attribute name="isStorable"   type="Boolean" default="false" 
+                        description="Query action storable mode activation." />
+        <aura:attribute name="isBackground" type="Boolean" default="false" 
+                        description="Query action background mode activation." />
+        <aura:attribute name="callback" type="Function" required="true"
+                        description="Callback method called when query results are returned. 2 object parameters expected for this callback : result and error."/>
+    </aura:method>
+    -->
+    <lightning:notificationsLibrary aura:id="notifLib"/>
+    
+</aura:component>

@@ -1,0 +1,99 @@
+<aura:documentation>
+    <aura:description>
+	<div class="slds-m-top_large">
+    <h4>Overview</h4>
+    <p>The <code>&lt;c:PEG_ContextLoader_CMP&gt;</code> component enables to automatically
+        load various configuration data directly in the Lightning App context to be later 
+        used locally for in any merge operation requested. It is usually included in the 
+        utility toolbar of the Lightning app.</p>
+    <p>It relies on the <a href="/docs/component-library/bundle/c:PEG_Context_CMP/documentation">
+        <code>&lt;c:PEG_Context_CMP&gt;</code></a> component to actually store the loaded
+        data and make it available via the <code>Context</code> token merge to other components 
+        leveraging the <a href="/docs/component-library/bundle/c:PEG_Merge_CMP/documentation">
+        <code>&lt;c:PEG_Merge_CMP&gt;</code></a> utility component.</p>
+     <p>It sets in the <code>Context</code> the following attributes:</p>   
+     <ul>
+        <li><code>RT</code>: IDs of Record Type given their developer names, per object API Name</li>
+        <li><code>LV</code>: IDs of List Views given their API names, per object API Name</li>
+        <li><code>RPT</code>: IDs of Reports given their Developer names</li>
+        <li><code>ROLE</code>: IDs of ReciprocalRole FSC records given their names</li>
+         <li><code>PL</code>: Labels/Values for picklist values, per picklist name (ObjectApiName.FieldApiName)</li>
+    </ul>
+    <br/>
+    </div>
+        
+    <div class="slds-m-top_large">
+    <h4>Typical Usages</h4>
+        <p>A typical <code>Context</code> loaded would have the following resulting
+            structure:</p>
+<pre>{
+  "LV":{
+    "Opportunity":{
+      "Toutes_les_Opportunites":"00B0X000004m6J5UAI"
+    }
+  },
+  "RT":{
+    "Account":{
+      "Business":"0120X000000NviiQAC",
+      "Tiers":"0120X000000NvyiQGF"
+    },
+    "Lead":{
+      "Decouverte":"0120X000000ckCHQAY"
+    }
+  },
+  "PL":{
+    "Opportunity.StageName":[
+    	{"label":"En cours","value":"ENC"},
+    	{"label":"Cloturée gagnée", "value":"CLO"}
+    ]
+  }
+}</pre>
+        <p>To get this result, the component should be configured as follows:</p>
+<pre>&lt;c:PEG_ContextLoader_CMP
+    recordTypesStr='["Account.Business","Account.Tiers","Lead.Decouverte"]'
+    listViewStr='["Opportunity.Toutes_les_Opportunites"]'/&gt;</pre>
+		<p>To be later used in merge operation (e.g. to open a given list view),
+            the following tokens can be used in an action configuration:</p>
+<pre>{
+  "icon": "new_window",
+  "name": "Open list",
+  "event": {
+    "name": "e.force:navigateToList",
+    "params": {
+      "listViewId": "{{{Context.LV.Opportunity.Toutes_les_Opportunites}}}",
+      "listViewName": null,
+      "scope": "Opportunity"
+    }
+  }
+}</pre>
+    <br/>
+    </div>
+        
+    <div class="slds-m-top_large">
+      <h4>Legal Notice</h4>
+      <p>Author: P-E GROS / Sept. 2020</p>
+      <br/>
+      <p>MIT License</p>
+      <br/>
+      <p>Copyright (c) 2020 pegros</p>
+      <br/>
+      <p> Permission is hereby granted, free of charge, to any person obtaining a copy
+          of this software and associated documentation files (the "Software"), to deal
+          in the Software without restriction, including without limitation the rights
+          to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+          copies of the Software, and to permit persons to whom the Software is
+          furnished to do so, subject to the following conditions:</p>
+      <br/>
+      <p> The above copyright notice and this permission notice shall be included in all
+          copies or substantial portions of the Software.</p>
+      <br/>
+      <p> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+          IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+          FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+          AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+          LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+          OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+          SOFTWARE.</p>
+  </div>
+    </aura:description>
+</aura:documentation>
