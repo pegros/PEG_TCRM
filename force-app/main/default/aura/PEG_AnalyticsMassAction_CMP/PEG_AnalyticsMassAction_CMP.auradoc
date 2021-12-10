@@ -3,38 +3,71 @@
       
     <div class="slds-m-top_large">
     <h4>Overview</h4>
-    <p>The <code>&lt;c:PEG_Add2Campaign_CMP&gt;</code> component enables to leverage
-        an Einstein Analytics Dashboard to target Leads or Contacts to be added
-        as members to a campaign.</p>
-    <p>Upon click on the "Add" button, it retrieves the filters applied on the EA
-        Dashboard, fetches the Lead or Contact IDs via a SAQL query to EA, 
-        filters out those already member of the current Campaign, asks
-        for user confirmation of the addition before adding the remaining ones
-        (if any) as new campaign members.</p>
-    <p>It is therefore exclusively available within Campaign Lightning record pages 
-        and basically adds an "add" button above an embedded EA Dashboard.</p>
+    <p>The <code>&lt;c:PEG_AnalyticsMassAction_CMP&gt;</code> component enables to leverage
+        an Einstein Analytics Dashboard to select record IDs and execute a mass creation of
+        target records in the Salesforce core platform.</p>
+
+        <p>It provides an alternative to the Tableau CRM mass actions requiring a VF page to implement
+        the logic, providing 2 main benefits:</p>
+        <ul>
+            <li>remain within the current browser tab / console application (e.g. stay in the current
+            campaign record page)</li>
+            <li>easily contextualise the action to the current record/user (e.g. add members to the campaign
+            record being currently displayed)</li>
+        </ul>
+        <p>Such an approach enables to replace possibly complex/slow query/filter Lightning components
+        by scalable Tableau CRM dashboards to trigger mass operations on Salesforce core data.
+        Real-life examples include:</p>
+        <ul>
+            <li>Contact / Lead targeting for campaigns</li>
+            <li>Account owner change / portfolio reassignment</li>
+        </ul>
+
+    <p>It basically provides a single mass Action button on top of a Tableau CRM Dashboard,
+        button which becomes active once the component has been completely initialized
+        (all Dashboard metadata fetched and processed).
+        When clicking on this action, the component executes the following operations:</p>
+    <ul>
+        <li>target record IDs fetch via SAQL based on the current dashboard filtering state</li>
+        <li>target ID list filtering via a SOQL query to remove any already proccessed ones</li>
+        <li>user operation confirmation (with possible entry of additional data to be replicated
+            on all records to be created)</li>
+        <li>mass insert of records in Salesforce core database</li>
+    </ul>
+
     <p>It proposes the following configuration elements:</p>
     <ul>
         <li><code>Title</code> and <code>Icon</code> of the component card container
             (custom labels being usable for the title with the <code>$Label.c.LabelName</code>
             syntax)</li>
-        <li><code>Label</code> of the main "add" action button (located within the card
-            container header, also supporting custom labels)</li>
+
         <li><code>Display height</code> of the EA Dashboard (in pixels)</li>
-        <li><code>Developer Name</code> of the EA Dashboard to be displayed</li>
-        <li><code>Developer Name</code> of the EA Dataset to be used (optional, the 1st
-            dataset of the dashboard being used by default, interesting
-            if the Dashboard uses multiple connected datasets)</li>
-        <li><code>ID Field</code> within the selected Dataset of the EA Dashboard to
-            be used as ID of the new campaign members.</li>
-        <li><code>Use Group</code> flag to add a "group by" SAQL statement to extract
-            the member IDs if the dataset contains multiple lines with the same
-            ID (e.g. when targeting parent "PersonContactIDs" from a Contract dataset).</li>
-        <li><code>Member Type</code> (i.e. Contact or Lead) of the records to be added
-            as new members of the campaign</li>
-        <li><code>Refresh Tab</code> to force a refresh of the current tab after addition
-            of new campaign members (so that the standard "campaign member" component
-            gets automatically updated.</li>
+            <li><code>Dashboard Name</code> containing the API Name of the Tableau CRM Dashboard to be used
+            <li><code>Dataset Name</code> identifying the dataset to be used for the SAQL
+                targeting query (within the possible N connected ones used by the Dashboard) </li>
+            <li><code>ID Field Name</code> identifying the field in this dataset to be used as target IDs</li>
+            <li><code>Use Group by?</code> (optional) to implement a group by SAQL query if multiple
+                entries may have the same target ID in the dataset (and reduce the impact of the max.
+                10 000 rows constraint)</li>
+                <li><code>Action Label</code> of the main action button (located within the card
+                    container header, also supporting custom labels)</li>
+            <li><code>SOQL Control Query</code> providing the SOQL query template to be used to
+                filter out already existing records (returning target record IDs with an 
+                <code>in {{{ROWS}}}</code> where clause evaluated upon action) </li>
+            <li><code>Target Record Template</code> containing a JSON object record template which will be
+                replicated for each target record to be inserted (with at least the <code>sobjectType</code>
+                property set)</li>
+            <li><code>Target Lookup Field</code> indicating the API Name of the ID field to be retrieved
+                in the SOQL control query and applied on the target records.</li>
+            <li><code>Action Input Fields</code> providing an optional set of field API names to display
+                a form in the action confirmation popup, the values of which being replicated on all target
+                records.</li>
+            <li><code>Batch Size</code> settingh a max. number of rows per <code>insert</code> operation,
+                the component iterating until all target records have been inserted.</li>
+            <li><code>Refresh Tab</code> to force a refresh of the current tab after addition
+                of new campaign members (so that the standard "campaign member" component
+                gets automatically updated.</li>
+
     </ul>
     <p>This component relies on the following components:</p>
     <ul>
@@ -49,18 +82,20 @@
 	<p><b>Important</b></p>
     <ul>
         <li>The SAQL query to fetch the member IDs from the dashboard is rebuilt by
-            the component based on the EA Dashboard situation when clicking the "Add" button.
+            the component based on the EA Dashboard situation when clicking the action button.
             Dashboard and Dataset metadata are parsed at component initialisation but any
             advanced JSON configuration (SAQL and SOQL steps, custom bindings...) is not
             supported. --> Only dataset connections, global filters and widget steps
             configured directly from the Analytics Studio are currently supported.</li>
         <li>DMLs and SAQL queries are limited to 10 000 records. --> The components therefore
             does not support adding more than such a number.</li>
-        <li>The default information message displayed before confirming the additions
-            is managed via the <code>PEG_Add2CampaignMessage</code> custom label with 2
+        <li>Various information/error messages or action labels displayed by the component
+            are managed via <code>PEG_AnalyticsMassAction...</code> custom labels. 
+            A special case in the <code>PEG_AnalyticsMassActionMessage</code> label
+            displayed on top of the confirmation popup and including 2
             merge data tokens respectively for the original number of records fetched
             via SAQL and the number of new records to add (after having removed the ones
-            already members of the campaign, fetched via SOQL)</li>
+            already present determined via SOQL)</li>
     </ul>
     <br/>
     </div>
