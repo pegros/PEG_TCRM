@@ -135,7 +135,7 @@ ContactId
 [{"name":"Status","required":"true"}]
 ```
 
-For the Dashboard filter, the following example enables to filter identified 
+For the `Dashboard filter`, the following example enables to filter identified 
 Campaign targets based on a sub-campaign record dedicated to a specific agency:
 ```
 {"datasets":{"Targets":[
