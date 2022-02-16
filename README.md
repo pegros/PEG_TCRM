@@ -140,5 +140,6 @@ Campaign targets based on a sub-campaign record dedicated to a specific agency:
 ```
 {"datasets":{"Targets":[
     {"fields":["CampaignId"],"filter":{"operator":"in","values":["{{{Object.ParentId}}}"]},"locked":true,"hidden":true},
-    {"fields":["AgencyId"],"filter":{"operator":"in","values":["{{{Object.Agency__c}}}"]},"locked":true,"hidden":true}]}}
+    {"fields":["AgencyId"],"filter":{"operator":"in","values":["{{{Object.Agency__c}}}"]},"locked":true,"hidden":true}
+]}}
 ```
