@@ -77,14 +77,10 @@ Aura based PEG Lightning Components package):
 ## Installation
 
 To retrieve the SFDX project, you may simply execute a git clone from the GitHub repository.
-```
-git clone git@github.com:pegros/PEG_TCRM.git
-```
+> git clone git@github.com:pegros/PEG_TCRM.git
 
 Via SFDX you may then deploy it on you Org
-```
-sfdx force:source:deploy -u <yourOrgAlias> -w 10 --verbose -p force-app
-```
+> sfdx force:source:deploy  -w 10 --verbose -p force-app -u <yourOrgAlias>
 
 
 ## Configuration
@@ -94,47 +90,55 @@ may be accessed in the **Aura>c** filter of the component library on any sandbox
 package is deployed (via the `/docs/component-library/overview/components` relative URL).
 
 Most of not all of the configuration happens in the App Builder. The main properties are:
-* _Dashboard Name_ containing the API Name of the Tableau CRM Dashboard to be used
-* _Dataset Name_ identifying the dataset to be used for the SAQL targeting query
+* `Dashboard Name` containing the API Name of the Tableau CRM Dashboard to be used
+* `Dataset Name` identifying the dataset to be used for the SAQL targeting query
 (within the possible N connected ones used by the Dashboard) 
-* _ID Field Name_ identifying the field in this dataset to be used as target IDs
-* _Use Group by?_ (optional) to implement a group by SAQL query if multiple entries may
+* `ID Field Name` identifying the field in this dataset to be used as target IDs
+* `Use Group by?` (optional) to implement a group by SAQL query if multiple entries may
 have the same target ID in the dataset (and reduce the impact of the max. 10 000 rows constraint)
-* _SOQL Control Query_ providing the SOQL query template to be used to filter out already
+* `SOQL Control Query` providing the SOQL query template to be used to filter out already
 existing records (returning target record IDs with an `in {{{ROWS}}}` where clause evaluated
 upon action) 
-* _Target Record Template_ containing a JSON object record template which will be replicated
+* `Target Record Template` containing a JSON object record template which will be replicated
 for each target record to be inserted (with at least the `sobjectType` property set)
-* _Target Lookup Field_ indicating the API Name of the ID field to be retrieved in the SOQL control query
+* `Target Lookup Field` indicating the API Name of the ID field to be retrieved in the SOQL control query
 and applied on the target records.
-* _Action Input Fields_ providing an optional set of field API names to display a form
+* `Action Input Fields` providing an optional set of field API names to display a form
 in the action confirmation popup, the values of which being replicated on all target records.
-* _Batch Size_ settingh a max. number of rows per _insert_ operation, the component iterating
+* `Batch Size` setting a max. number of rows per `insert` operation, the component iterating
 untill all target records have been inserted. 
 
 ![App Builder Configuration!](/media/massActionConfiguration.png)
 
 *Note*:
-* for the _SOQL Control Query_ and the _Target Record Template_ properties, all _merge_ tokens
+* for the `SOQL Control Query` and the `Target Record Template` properties, all **merge** tokens
 supported by the ***PEG_Merge_CMP*** component may be used (e.g. `{{{recordId}}}` or `{{{userId}}}`).
 * for some tokens (e.g. Record Type IDs), the **PEG_Context_CMP** needs to be initialized via the
 **PEG_ContextLoader_CMP** in the utility bar.
 
 
 For the above example (to add Contacts as members to a campaign), the following properties should be set as follows:
-* _SOQL Control Query_ (to fetch all Contact IDs already presente as members of the current campaign)
+* `SOQL Control Query` (to fetch all Contact IDs already presente as members of the current campaign)
 ```
 SELECT ContactId FROM CampaignMember WHERE CampaignId = '{{{recordId}}}' and LeadOrContactId in {{{ROWS}}}  WITH SECURITY_ENFORCED
 ```
-* _Target Record Template_ (to initialize new members for the current campaign)
+* `Target Record Template` (to initialize new members for the current campaign)
 ```
 {"sobjectType": "CampaignMember","CampaignId" :"{{{recordId}}}" }
 ```
-* _Target Lookup Field_ (to clearly set the member ID as Contacts)
+* `Target Lookup Field` (to clearly set the member ID as Contacts)
 ```
 ContactId
 ```
-* _Action Input Fields_ (to ask the user for a member status upon confirmation)
+* `Action Input Fields` (to ask the user for a member status upon confirmation)
 ```
 [{"name":"Status","required":"true"}]
+```
+
+For the Dashboard filter, the following example enables to filter identified 
+Campaign targets based on a sub-campaign record dedicated to a specific agency:
+```
+{"datasets":{"Targets":[
+    {"fields":["CampaignId"],"filter":{"operator":"in","values":["{{{Object.ParentId}}}"]},"locked":true,"hidden":true},
+    {"fields":["AgencyId"],"filter":{"operator":"in","values":["{{{Object.Agency__c}}}"]},"locked":true,"hidden":true}]}}
 ```

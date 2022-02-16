@@ -42,6 +42,9 @@
             syntax)</li>
         <li><code>Display height</code> of the EA Dashboard (in pixels)</li>
         <li><code>Dashboard Name</code> containing the API Name of the Tableau CRM Dashboard to be used</li>
+        <li><code>Dashboard Filter</code> containing the filter to apply automatically on the  Dashboard
+            upon initialization to contextualize it to the record/user context (leveraging contextual
+            merge information). </li>
         <li><code>Dataset Name</code> identifying the dataset to be used for the SAQL
                 targeting query (within the possible N connected ones used by the Dashboard) </li>
         <li><code>ID Field Name</code> identifying the field in this dataset to be used as target IDs</li>
@@ -50,6 +53,8 @@
                 10 000 rows constraint)</li>
         <li><code>Action Label</code> of the main action button (located within the card
                     container header, also supporting custom labels)</li>
+        <li><code>Action Message</code> displayed in the action popup to provide (optional) information
+                to the user about the action being executed.</li>
         <li><code>SOQL Control Query</code> providing the SOQL query template to be used to
                 filter out already existing records (returning target record IDs with an 
                 <code>in {{{ROWS}}}</code> where clause evaluated upon action) </li>
@@ -77,6 +82,8 @@
         <li><a href="/docs/component-library/bundle/c:PEG_SOQL_CMP/documentation"><code>&lt;PEG_SOQL_CMP&gt;</code></a>
             to execute SOQL queries (to filter out record IDs already members of the current campaign) and
             insert DMLs (to add new members).</li>
+        <li><a href="/docs/component-library/bundle/c:PEG_Merge_CMP/documentation"><code>&lt;PEG_Merge_CMP&gt;</code></a>
+                to contextualise information based on current User, page Record...</li>
     </ul>
 
     <p><b>Important</b></p>
