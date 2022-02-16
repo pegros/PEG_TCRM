@@ -200,8 +200,12 @@ public with sharing class PEG_SoqlOperation_CTL {
         }
         return itemList;
      } catch (Exception e) {
-         System.debug('executeDML : returning error ' + e.getMessage());
-         throw new AuraHandledException(e.getMessage());
+        System.debug('executeDML : returning error ' + e.getMessage());
+        if (e.getTypeName() == 'System.DmlException') {
+            System.debug('executeDML : returning DML Excption ' + ((System.DmlException)e).getDmlMessage(0));
+            throw new AuraHandledException(((System.DmlException)e).getDmlMessage(0));
+        }
+        throw new AuraHandledException(e.getMessage());
      }        
   }
   /*

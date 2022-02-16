@@ -44,31 +44,42 @@
 	//-------------------------------------------------------------------
     // Component initialization method
     //-------------------------------------------------------------------
-	doInit : function(component, event, helper) {
-		console.log('doInit: START');
+    doInit : function(component, event, helper) {
+        console.log('doInit: START');
         
         let actionResult = {
             display: false
         };
         component.set("v.actionResult",actionResult);
-        console.log('fetchRecommendations: actionResult init ',actionResult);
-        
-        let title = component.get("v.title");
-        if ((title) && (title.includes('$Label.'))) {
-            console.log('doInit: fetching custom Label value for title ',title);
-            title = $A.getReference(title) || title;
-            console.log('doInit: title value fetched',title);
-            component.set("v.title",title);
+        console.log('doInit: actionResult init ',actionResult);
+
+        let dashboardFilter = component.get("v.dashboardFilter");
+        if (dashboardFilter) {
+            console.log('doInit: dashboardFilter configuration fetched ',dashboardFilter);
+            component.find('filterMergeUtil').merge(
+                dashboardFilter,
+                null,
+                function(mergeResult,mergeError) {
+                    console.log('doInit: result from filter merge',mergeResult);
+                    if (mergeResult) {
+                        //let dashboardFilterJson = JSON.parse(mergeResult);
+                        let dashboardFilterJson = mergeResult;
+                        console.log('doInit: dashboardFilterJson parsed',dashboardFilterJson);
+                        component.set("v.dashboardFilterJson",dashboardFilterJson);
+                        console.log('doInit: END OK / after filter merge');
+                        component.set("v.filterReady",true);
+                    }
+                    else {
+                        console.warn('doInit: END KO / filter merging issue',mergeError);
+                    }
+                });
+            console.log('doInit: filter merge triggered');
         }
-        
-        let actionLabel = component.get("v.actionLabel");
-        if ((actionLabel) && (actionLabel.includes('$Label.'))) {
-            console.log('doInit: fetching custom Label value for action ',actionLabel);
-            actionLabel = $A.getReference(actionLabel) || actionLabel;
-            console.log('doInit: action label value fetched',actionLabel);
-            component.set("v.actionLabel",actionLabel);
+        else {
+            console.log('doInit: no dashboardFilter configuration set');
+            component.set("v.filterReady",true);
         }
-        
+
         let fieldList = component.get("v.fieldList");
         if (fieldList) {
             console.log('doInit: list of fields fetched ',fieldList);
@@ -90,11 +101,11 @@
             let configBase = '{"target":' + baseTarget + ',"query":"' + queryBase + '"}';
             console.log('doInit: configBase set ', configBase);
             if (configBase.includes('{{{')) {
-            	console.log('doInit: triggering merge');
+                console.log('doInit: triggering merge');
                 component.find('mergeUtil').merge(
-            		configBase,
-           			null,
-            		function(mergeResult,mergeError) {
+                    configBase,
+                    null,
+                    function(mergeResult,mergeError) {
                 		console.log('doInit: result from merge',mergeResult);
                 		if (mergeResult) {
                             let configBaseJson = JSON.parse(mergeResult);
