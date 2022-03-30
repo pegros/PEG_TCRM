@@ -36,7 +36,13 @@
     <aura:attribute name="idFieldName"        type="String"
                     access="global"           default="Id"
                     description="API Name of the Member ID field in the EA dataset to be used." />
-    <aura:attribute name="useGroup"           type="Boolean"
+    <aura:attribute name="otherFields"        type="String"
+                    access="global"
+                    description="JSON List of additional fields in the EA dataset to be fetched with their target field names (ignored if useGroup activated)." />
+    <aura:attribute name="otherFieldsJson"    type="List"
+                    access="private"
+                    description='JSON conversion of "otherFields" attribute.' />
+   <aura:attribute name="useGroup"           type="Boolean"
                     access="global"           default="false"
                     description='Flag to add a "group by" saql statement to fetch the member IDs in the EA dataset.' />
 
@@ -68,7 +74,7 @@
                     description="API Name of the lookup field on the target Object."/>
     <aura:attribute name="fieldList"          type="String"
                     access="global"
-                    description='List of fields to init as a JSON list of JSON objects as [{"name":"fieldApiName"}].' />
+                    description='List of fields to init via user input as a JSON list of JSON objects as [{"name":"fieldApiName"}].' />
     <aura:attribute name="fieldListJson"      type="List"
                     access="private"
                     description='JSON conversion of "fieldList" attribute.' />
@@ -121,16 +127,19 @@
                     access="private"          default="false"
                     description="Action running."/>
     
+    <aura:attribute name="saqlResults"        type="String"
+                    access="private"
+                    description="SAQL results received."/>
     <aura:attribute name="saqlIdList"         type="List"
                     access="private"
-                    description="List of IDs extracted from EA."/>
+                    description="List of IDs extracted from EA SAQL results."/>
     <aura:attribute name="soqlIdList"         type="List"
                     access="private"
                     description="List of IDs (to be) added in Campaign."/>
     <aura:attribute name="runStep"            type="String"
                     access="private"          default="0"
                     description="Progress bar step."/>
-    
+
     <aura:attribute name="actionProgress"     type="Integer"
                     access="private"          default="0"
                     description="Current progress %age of final action operation (when batchable)."/>
@@ -142,9 +151,7 @@
     <aura:attribute name="saqlQuery"          type="String"
                     access="private"
                     description="SAQL Query generated."/>
-    <aura:attribute name="saqlResults"        type="String"
-                    access="private"
-                    description="SAQL results received."/>
+
     <aura:attribute name="soqlQuery"          type="String"
                     access="private"
                     description="SOQL Query generated."/>
@@ -313,6 +320,7 @@
                             <div class="slds-var-p-around_small">
                                 <lightning:progressBar value="{!v.actionProgress}" size="large" />
                             </div>
+                            <lightning:spinner alternativeText="Executing" size="small" />
                         </aura:if>
                     </div>
 

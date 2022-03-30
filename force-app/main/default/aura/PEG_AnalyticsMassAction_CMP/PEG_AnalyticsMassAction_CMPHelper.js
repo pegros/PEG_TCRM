@@ -28,8 +28,8 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 ***/
-    
-	//-------------------------------------------------------------------
+
+    //-------------------------------------------------------------------
     // Global parameters, shared among all running instances of the component 48
     //-------------------------------------------------------------------
     SDK_CONTEXT: {
@@ -40,8 +40,9 @@
     FILTERS: {},
     MAPPINGS: {},
     ERROR_MESSAGES:null,
-    
-	//-------------------------------------------------------------------
+    SAQL_LIMIT: 25000,
+
+    //-------------------------------------------------------------------
     // Component initialization method
     //-------------------------------------------------------------------
     doInit : function(component, event, helper) {
@@ -90,6 +91,17 @@
         else {
             console.warn('doInit: list of fields missing');            
         }
+
+        let otherFields = component.get("v.otherFields");
+        if (otherFields) {
+            console.log('doInit: other EA/Core Fields fetched ',otherFields);
+            let otherFieldsJson = JSON.parse(otherFields);
+            console.log('doInit: other EA/Core Fields parsed ',otherFieldsJson);
+            component.set("v.otherFieldsJson",otherFieldsJson);
+        }
+        else {
+            console.warn('doInit: other EA/Core Fields missing');            
+        }
   
         let baseTarget = component.get("v.baseTarget");
         let queryBase = component.get("v.queryBase");
@@ -133,8 +145,8 @@
             console.warn('doInit: END KO / base Target or query base missing');            
         }
     },
-    
-	//-------------------------------------------------------------------
+
+    //-------------------------------------------------------------------
     // Methods to fetch Dashboard and Dataset descriptions
     //-------------------------------------------------------------------
     finalizeInit: function(component, event, helper) {
@@ -672,9 +684,9 @@
                 return null;
             }
         }
-	},
+    },
     
-	//-------------------------------------------------------------------
+    //-------------------------------------------------------------------
     // Method to launch the Mass Action process
     //-------------------------------------------------------------------
     startAction : function(component, event, helper) {
@@ -699,212 +711,213 @@
                 console.log('startAction: state received',JSON.stringify(stateData));
 
                 let dashboardId = component.get("v.dashboardId");
-        		console.log('startAction: dashboardId fetched', dashboardId);
-        		let datasetId	= component.get("v.datasetId");
-        		console.log('startAction: datasetId fetched', datasetId);
+                console.log('startAction: dashboardId fetched', dashboardId);
+                let datasetId	= component.get("v.datasetId");
+                console.log('startAction: datasetId fetched', datasetId);
                 let mapping = helper.MAPPINGS[dashboardId + '.' + datasetId];
-        		console.log('startAction: mapping fetched', mapping);
-                
-        		/*let dsDesc = component.get("v.dsDesc");
-        		console.log('startAction: dsDesc fetched',JSON.stringify(dsDesc));
-                let dbDesc = component.get("v.dbDesc");
-        		console.log('startAction: dbDesc fetched',JSON.stringify(dbDesc));
-                let dsFieldDesc = component.get("v.dsFieldDesc");
-        		console.log('startAction: dsFieldDesc fetched',JSON.stringify(dsFieldDesc));*/
+                console.log('startAction: mapping fetched', mapping);
+
                 let mainDS = helper.DATASETS[datasetId];
-        		console.log('startAction: mainDS fetched',JSON.stringify(mainDS));
+                console.log('startAction: mainDS fetched',JSON.stringify(mainDS));
                 let idFieldName = component.get("v.idFieldName");                
-        		console.log('startAction: idFieldName fetched',idFieldName);
-        		let useGroup = component.get("v.useGroup");
-				console.log('startAction: useGroup fetched ',useGroup); 
-                
+                console.log('startAction: idFieldName fetched',idFieldName);
+                let useGroup = component.get("v.useGroup");
+                console.log('startAction: useGroup fetched ',useGroup); 
+                let otherFields = component.get("v.otherFieldsJson");
+                console.log('startAction: otherFields fetched ',JSON.stringify(otherFields)); 
+
                 // Handling of dashboards with multiple tabs --> initialstate contains only steps of 1st tab.
                 console.log('startAction: mapping steps fetched ',(Object.keys(mapping.steps))); 
-				console.log('startAction: stateData steps fetched ',(Object.keys(stateData.payload.state.steps))); 
+                console.log('startAction: stateData steps fetched ',(Object.keys(stateData.payload.state.steps))); 
                 if ((Object.keys(mapping.steps)).length < (Object.keys(stateData.payload.state.steps)).length) {
-					console.warn('startAction: new steps added in stateData --> reevaluating dashboard desc'); 
-					               
+                    console.warn('startAction: new steps added in stateData --> reevaluating dashboard desc'); 
+
                     (helper.DASHBOARDS)[dashboardId].initState = stateData.payload.state;
                     helper.finaliseDescs(component,helper);
-                    
+
                     mapping = helper.MAPPINGS[dashboardId + '.' + datasetId];
-        			console.log('startAction: mapping reloaded', mapping);
+                    console.log('startAction: mapping reloaded', mapping);
                     mainDS = helper.DATASETS[datasetId];
-        			console.log('startAction: mainDS reloaded',JSON.stringify(mainDS));
-                    
-					console.warn('startAction: dashboard desc reevaluated'); 
+                    console.log('startAction: mainDS reloaded',JSON.stringify(mainDS));
+
+                    console.warn('startAction: dashboard desc reevaluated'); 
                 }
                 else {
-					console.log('startAction: steps in stateData consistent with desc');  
+                    console.log('startAction: steps in stateData consistent with desc');  
                 }
-                
-                let saqlQuery = helper.buildSAQL(stateData,mainDS,idFieldName,mapping,useGroup,helper);
+
+                let saqlQuery = helper.buildSAQL(stateData,mainDS,idFieldName,mapping,useGroup,otherFields,helper);
                 //let saqlQuery = helper.buildSAQL(stateData,dbDesc,dsDesc,dsFieldDesc,idFieldName,helper);
                 component.set("v.saqlQuery",saqlQuery);
-        		console.log('startAction: saqlQuery init ',saqlQuery);
+                console.log('startAction: saqlQuery init ',saqlQuery);
 
-        		let analyticsSDK = component.find("analyticsSDK");
-        		console.log('startAction: analyticsSDK found',analyticsSDK);                
-        		analyticsSDK.invokeMethod(
-            		this.SDK_CONTEXT,
-            		"executeQuery",
+                let analyticsSDK = component.find("analyticsSDK");
+                console.log('startAction: analyticsSDK found',analyticsSDK);                
+                analyticsSDK.invokeMethod(
+                    this.SDK_CONTEXT,
+                    "executeQuery",
                     {"query": saqlQuery},
-            		$A.getCallback(function(saqlErr, saqlData) {
+                    $A.getCallback(function(saqlErr, saqlData) {
                         component.set("v.runStep","2");
-              			if (saqlErr !== null) {
+                        if (saqlErr !== null) {
                             //component.set("v.isRunning",false);
                             let actionResult = {
-								display: true,
-								//title: "SAQL Query Error",
-                                //title: $A.getReference('$Label.c.PEG_AnalyticsMassActionSaqlError'),
-								//title: helper.ERROR_MESSAGES.SAQL,
-                                //title: component.get("v.SaqlErrorMsg"),
+                                display: true,
                                 title: $A.get("$Label.c.PEG_AnalyticsMassActionSaqlError"),
                                 error: saqlErr,
-								variant: "error"
-							};
-							component.set("v.actionResult",actionResult);
-							console.log('startAction: actionResult update ',actionResult);
-                            
+                                variant: "error"
+                            };
+                            component.set("v.actionResult",actionResult);
+                            console.log('startAction: actionResult update ',actionResult);
+
                             //component.set("v.actionError", JSON.stringify(saqlErr));
-                    		console.error("startAction: END SDK SAQL error received ", JSON.stringify(saqlErr));
-              			}
+                            console.error("startAction: END SDK SAQL error received ", JSON.stringify(saqlErr));
+                        }
                         else {
-                    		console.log('startAction: SDK SAQL data received ',saqlData);
-               				component.set("v.saqlResults",saqlData);
-                                                        
+                            console.log('startAction: SDK SAQL data received ',saqlData);
+                            component.set("v.saqlResults",saqlData);
+
                             let saqlJson = JSON.parse(saqlData);
-                    		console.log('startAction: SDK SAQL data parsed ',saqlJson);  
+                            console.log('startAction: SDK SAQL data parsed ',saqlJson);  
                             if (saqlJson) component.set("v.saqlResults",saqlJson);
-                            
+
                            	let saqlIdList = Array.from(helper.getSaqlIdSet(saqlJson,idFieldName));
-                    		console.log('startAction: target ID list initialized from SAQL ',saqlIdList);
+                            console.log('startAction: target ID list initialized from SAQL ',saqlIdList);
                             component.set("v.saqlIdList",saqlIdList);
-                            
-                            if (saqlIdList.length >= 10000) {
-                    			console.log('startAction: SAQL data fetch limit reached ',saqlIdList.length);
+
+                            if (saqlIdList.length >= helper.SAQL_LIMIT) {
+                                console.log('startAction: SAQL data fetch limit reached ',saqlIdList.length);
                                 let actionResult = {
-									display: true,
-                                	title: $A.get("$Label.c.PEG_AnalyticsMassActionSizeWarning"),
-									variant: "info"
-								};
-								component.set("v.actionResult",actionResult);
-								console.log('startAction: actionResult update ',actionResult);
+                                    display: true,
+                                    title: $A.get("$Label.c.PEG_AnalyticsMassActionSizeWarning"),
+                                    variant: "info"
+                                };
+                                component.set("v.actionResult",actionResult);
+                                console.log('startAction: actionResult update ',actionResult);
                             }
                             else {
-                    			console.log('startAction: SAQL data fetch below limit ',saqlIdList.length);
-								let actionResult = {
-									display: false,
-                                	title: "",
-									variant: "info"
-								};
-								component.set("v.actionResult",actionResult);
-								console.log('startAction: actionResult update ',actionResult);
+                                console.log('startAction: SAQL data fetch below limit ',saqlIdList.length);
+                                let actionResult = {
+                                    display: false,
+                                    title: "",
+                                    variant: "info"
+                                };
+                                component.set("v.actionResult",actionResult);
+                                console.log('startAction: actionResult update ',actionResult);
                             }
-                            
-                            /*let targetObject = component.get("v.targetObject");
-                    		console.log('startAction: targetObject fetched ',targetObject);*/
+
                             let targetLookup = component.get("v.targetLookup");
-                    		console.log('startAction: targetLookup fetched ',targetLookup);
+                            console.log('startAction: targetLookup fetched ',targetLookup);
 
                             let soqlQuery = helper.buildSOQL(saqlIdList, component);
-                    		console.log('startAction: soqlQuery init ',soqlQuery);
+                            console.log('startAction: soqlQuery init ',soqlQuery);
                             component.set("v.soqlQuery",soqlQuery);
-                           
+
                             if (soqlQuery) {
-                    			console.log('startAction: triggering query');
-                                
-                            	component.find('soqlUtil').runQuery(
-                       				soqlQuery,
-                               		false, // bypassFLS
-                               		false, // bypassSharing
-                               		"",  // queryType
-                               		false, // isStorable
-                               		false, // isBackground
-                       				function(queryResult,queryError) {
-                          				console.log('startAction: result from SOQL query');
-                                    	component.set("v.runStep","3");
-                                    
-                          				if (queryResult) {
-                              				console.log('startAction: queryResult received',queryResult);
-                                        
-                                        	let soqlIdList = Array.from(helper.getSoqlIdSet(queryResult,saqlIdList,targetLookup));
-                                        	console.log('startAction: END target ID list filtered from SOQL ',soqlIdList);
-                           					component.set("v.soqlIdList", soqlIdList);
-                                    	}
-                                    	else {
-                                        	//component.set("v.isRunning",false);
-                                        	let actionResult = {
-												display: true,
-												//title: "SOQL Query Error",
-												//title: $A.getReference('$Label.c.PEG_AnalyticsMassActionSoqlError '),
-												//title: helper.ERROR_MESSAGES.SOQL,
-												//title: component.get("v.SoqlErrorMsg"),
-												title: $A.get("$Label.c.PEG_AnalyticsMassActionSoqlError"),
-                								error: queryError,
-												variant: "error"
-											};
-											component.set("v.actionResult",actionResult);
-											console.log('startAction: actionResult update ',actionResult);
-                                        
-                                        	//component.set("v.actionError", JSON.stringify(queryError));
-                                        	console.log('startAction: END queryError received',queryError);
-                                    	}
-                                	});
-                    			console.log('startAction: soql query sent');
+                                console.log('startAction: triggering query');
+
+                                component.find('soqlUtil').runQuery(
+                                    soqlQuery,
+                                    false, // bypassFLS
+                                    false, // bypassSharing
+                                    "",  // queryType
+                                    false, // isStorable
+                                    false, // isBackground
+                                    function(queryResult,queryError) {
+                                        console.log('startAction: result from SOQL query');
+                                        component.set("v.runStep","3");
+
+                                        if (queryResult) {
+                                            console.log('startAction: queryResult received',queryResult);
+
+                                            let soqlIdList = Array.from(helper.getSoqlIdSet(queryResult,saqlIdList,targetLookup));
+                                            console.log('startAction: END target ID list filtered from SOQL ',soqlIdList);
+                                            component.set("v.soqlIdList", soqlIdList);
+                                        }
+                                        else {
+                                            //component.set("v.isRunning",false);
+                                            let actionResult = {
+                                                display: true,
+                                                title: $A.get("$Label.c.PEG_AnalyticsMassActionSoqlError"),
+                                                error: queryError,
+                                                variant: "error"
+                                            };
+                                            component.set("v.actionResult",actionResult);
+                                            console.log('startAction: actionResult update ',actionResult);
+
+                                            //component.set("v.actionError", JSON.stringify(queryError));
+                                            console.log('startAction: END queryError received',queryError);
+                                        }
+                                    });
+                                console.log('startAction: soql query sent');
                             }
                             else {
-                    			console.warn('startAction: no query to trigger');
+                                console.warn('startAction: no query to trigger');
                                 component.set("v.runStep","3");
                                 component.set("v.soqlIdList", saqlIdList);
                             }
-              			}
-            		})
-        		);
-        		console.log('startAction: executting SAQL query');                
-     		})
+                        }
+                    })
+                );
+                console.log('startAction: executting SAQL query');                
+            })
         );
         console.log('startAction: fetching ');	
-	},
-    
+    },
+
     //-------------------------------------------------------------------
     // Utility Methods to build the SAQL query out of the Dashboard state
     //-------------------------------------------------------------------
-    buildSAQL : function(dbState,mainDS,mainIdField,mapping,useGroup,helper) {
+    buildSAQL : function(dbState,mainDS,mainIdField,mapping,useGroup,otherFields,helper) {
         console.log('buildSAQL: START');
         
         let query = 'q = load \"' + mainDS.id + '/' + mainDS.currentVersionId + '\";';
         console.log('buildSAQL: query root init',query);
         
         let filters = dbState.payload.state.datasets;
-		console.log('buildSAQL: dashboard global filters fetched',JSON.stringify(filters));
-		for (let filterItem in filters) {
-			console.log('buildSAQL: processing filter ',JSON.stringify(filterItem));
-			query += helper.getFilterSAQL(filterItem,filters[filterItem],mapping.filters,helper);
+        console.log('buildSAQL: dashboard global filters fetched',JSON.stringify(filters));
+        for (let filterItem in filters) {
+            console.log('buildSAQL: processing filter ',JSON.stringify(filterItem));
+            query += helper.getFilterSAQL(filterItem,filters[filterItem],mapping.filters,helper);
         }
-		console.log('buildSAQL: global filter query filters added ',query);
-        
+        console.log('buildSAQL: global filter query filters added ',query);
+
         let steps = dbState.payload.state.steps;
-		console.log('buildSAQL: query steps fetched',JSON.stringify(steps));            
-		for (let stepItem in steps) {
-			console.log('buildSAQL: processing step ',JSON.stringify(stepItem));
-			query += helper.getStepSAQL(stepItem,steps[stepItem],mapping.steps,helper);
+        console.log('buildSAQL: query steps fetched',JSON.stringify(steps));            
+        for (let stepItem in steps) {
+            console.log('buildSAQL: processing step ',JSON.stringify(stepItem));
+            query += helper.getStepSAQL(stepItem,steps[stepItem],mapping.steps,helper);
         }
-		console.log('buildSAQL: steps query filters added ',query);    
-        
+        console.log('buildSAQL: steps query filters added ',query);    
+
         if (useGroup) {
             console.log('buildSAQL: adding group by statement');
-			query	+= 'q = group q by \'' + mainIdField + '\';'
-            		 + 'q = foreach q generate \'' + mainIdField + '\' as \''
-            		 + mainIdField + '\', count() as \'count\';';
+            query   += 'q = group q by \'' + mainIdField + '\';'
+                    + 'q = foreach q generate \'' + mainIdField + '\' as \''
+                    + mainIdField + '\', count() as \'count\';';
+        }
+        else if (otherFields) {
+            console.log('buildSAQL: fetching ID and other fields');
+            query   += 'q = foreach q generate \'' + mainIdField + '\',';
+            console.log('buildSAQL: main ID field added', mainIdField);
+            otherFields.forEach(item => {
+                console.log('buildSAQL: adding field ', item);
+                query += '\'' + item.name + '\',';
+            });
+            let newVal = query.slice(0,-1) + ';';
+            console.log('buildSAQL: newVal ', newVal);
+            query = newVal;
+            console.log('buildSAQL: query updated ', query);
+            query = query.slice(0,-1) + ';';
+            console.log('buildSAQL: query reupdated ', query);
         }
         else {
-            console.log('buildSAQL: END query finalized',query);
-			query	+= 'q = foreach q generate \'' + mainIdField + '\';';
+            console.log('buildSAQL: fetching only main ID field');
+            query   += 'q = foreach q generate \'' + mainIdField + '\';';
         }
         //query	+= 'q = foreach q generate \'' + mainIdField + '\';'
-        
-        query += 'q = limit q 10000;';
+
+        query += 'q = limit q ' + helper.SAQL_LIMIT + ';';
         console.log('buildSAQL: END query finalized',query);
         return query;
     },
@@ -951,19 +964,19 @@
     },
     getFilterSAQL : function(filterName,filterState,filterMapping,helper) {
         console.log('getFilterSAQL: START with ',filterName);
-        
+
         let filterQuery = '';
         filterState.forEach(function(filterItem) {
-        	console.log('getFilterSAQL: processing filter ',JSON.stringify(filterItem));
+            console.log('getFilterSAQL: processing filter ',JSON.stringify(filterItem));
             let filterItemMap = filterMapping[filterName + '---' + filterItem.fields[0]];
-        	if (filterItemMap) {
+            if (filterItemMap) {
                 if (filterItemMap.type === "date") {
                     if (filterItem.filter.values.length > 0) {
-        				console.log('getFilterSAQL: adding date filter ',filterItemMap.field);
-                    	filterQuery += helper.getDateFilter(filterItemMap.fields,filterItem.filter.values);
+                        console.log('getFilterSAQL: adding date filter ',filterItemMap.field);
+                        filterQuery += helper.getDateFilter(filterItemMap.fields,filterItem.filter.values);
                     }
                     else {
-        				console.log('getFilterSAQL: date filter not set');                        
+                        console.log('getFilterSAQL: date filter not set');                        
                     }
                 }
                 else {
@@ -972,10 +985,10 @@
                         case "in":
                         case "not in":
                             if (filterItem.filter.values.length > 0) {
-                    			console.log('getFilterSAQL: adding (not) in filter');
-                            	filterQuery += 'q = filter q by \'' + filterItemMap.field + '\' '
-            								+ filterItem.filter.operator 
-                                    	    + ' [\"' + filterItem.filter.values.join('\", \"') + '\"];';
+                                console.log('getFilterSAQL: adding (not) in filter');
+                                filterQuery += 'q = filter q by \'' + filterItemMap.field + '\' '
+                                            + filterItem.filter.operator 
+                                            + ' [\"' + filterItem.filter.values.join('\", \"') + '\"];';
                             }
                             else {
                                 console.log('getFilterSAQL: (not) in filter not set');
@@ -983,11 +996,11 @@
                             break;
                         case ">=<=":
                             if (filterItem.filter.values.length > 0) {
-                            	console.log('getFilterSAQL: adding between filter');
-                            	filterQuery += 'q = filter q by \'' + filterItemMap.field + '\' >= '
-            								+ filterItem.filter.values[0]
-                                        	+ ' && \'' + filterItemMap.field + '\' <= '
-                                        	+ filterItem.filter.values[1] + ';';
+                                console.log('getFilterSAQL: adding between filter');
+                                filterQuery += 'q = filter q by \'' + filterItemMap.field + '\' >= '
+                                            + filterItem.filter.values[0]
+                                            + ' && \'' + filterItemMap.field + '\' <= '
+                                            + filterItem.filter.values[1] + ';';
                             }
                             else {
                                 console.log('getFilterSAQL: between filter not set');
@@ -997,12 +1010,12 @@
                         case ">=":
                         case "<":
                         case "<=":
- 						case "==":
+                        case "==":
                         case "!=":
                             if (filterItem.filter.values.length > 0) {
-                            	console.log('getFilterSAQL: adding single compare filter');
-								filterQuery += 'q = filter q by \'' + filterItemMap.field + '\' '
-            								+ filterItem.filter.operator + ' '
+                                console.log('getFilterSAQL: adding single compare filter');
+                                filterQuery += 'q = filter q by \'' + filterItemMap.field + '\' '
+                                            + filterItem.filter.operator + ' '
                                         	+ filterItem.filter.values[0] + ';';
                             }
                             else {
@@ -1011,10 +1024,10 @@
                             break;
                         case "matches":
                             if (filterItem.filter.values.length > 0) {
-                            	console.log('getFilterSAQL: adding match filter');
-								filterQuery += 'q = filter q by \'' + filterItemMap.field + '\' '
-            								+ filterItem.filter.operator + ' "'
-                                        	+ filterItem.filter.values[0] + '";';
+                                console.log('getFilterSAQL: adding match filter');
+                                filterQuery += 'q = filter q by \'' + filterItemMap.field + '\' '
+                                            + filterItem.filter.operator + ' "'
+                                            + filterItem.filter.values[0] + '";';
                             }
                             else {
                             	console.log('getFilterSAQL: match filter not set');                                
@@ -1023,8 +1036,8 @@
                         case "is null":
                         case "is not null":
                             console.log('getFilterSAQL: adding is (not) null filter');
-							filterQuery += 'q = filter q by \'' + filterItemMap.field + '\' '
-            							+ filterItem.filter.operator + ';';
+                            filterQuery += 'q = filter q by \'' + filterItemMap.field + '\' '
+                                        + filterItem.filter.operator + ';';
                             break;
                         default:
                             console.warn('getFilterSAQL: unsupported filter operator',filterItem.filter.operator);
@@ -1035,7 +1048,7 @@
         		console.warn('getStepSAQL: ignoring unmapped field ',filterItem.fields[0]);
             }
         });
-        
+
         console.log('getFilterSAQL: END with ', filterQuery);
         return filterQuery;
     },
@@ -1043,138 +1056,138 @@
         console.log('getDateFilter: START');
         
         let filterQuery = 'q = filter q by date(\''
-        					+ dateFields.year
-        					+ '\', \'' + dateFields.month
-        					+ '\', \'' + dateFields.day
-        					+ '\') in [';
+                            + dateFields.year
+                            + '\', \'' + dateFields.month
+                            + '\', \'' + dateFields.day
+                            + '\') in [';
         console.log('getDateFilter: filterQuery initialized ',filterQuery);
-                        
+
         let fromDate = filterValues[0][0];
         console.log('getDateFilter: fromDate ',fromDate);
         console.log('getDateFilter: fromDate type ',typeof fromDate);
         let toDate = filterValues[0][1];
         console.log('getDateFilter: toDate ',toDate);
         console.log('getDateFilter: toDate type ',typeof toDate);
-                        
+
         if (typeof fromDate === 'number') {
             console.log('getDateFilter: processing epoch dates ');
-            
+
             let fromDateDate = new Date(fromDate );
             console.log('getDateFilter: converted fromDate ',fromDateDate);
             let toDateDate = new Date(toDate );
             console.log('getDateFilter: converted toDateDate ',toDateDate);
                         	
-			filterQuery += 'dateRange(['
-            			+ fromDateDate.getFullYear() + ','
-            			+ (fromDateDate.getMonth()+1) + ','
-            			+ fromDateDate.getDate() + '],['
-            			+ toDateDate.getFullYear() + ','
-            			+ (toDateDate.getMonth()+1) + ','
-            			+ toDateDate.getDate() + '])];';
+            filterQuery += 'dateRange(['
+                        + fromDateDate.getFullYear() + ','
+                        + (fromDateDate.getMonth()+1) + ','
+                        + fromDateDate.getDate() + '],['
+                        + toDateDate.getFullYear() + ','
+                        + (toDateDate.getMonth()+1) + ','
+                        + toDateDate.getDate() + '])];';
         }
         else {
             console.log('buildSAQL: processing relative dates ');
             
             if (fromDate[1] == 0)			filterQuery += '"current ' + fromDate[0] + '".."'
-            	else if (fromDate[1] == 1)	filterQuery += '"' + fromDate[1] + " " + fromDate[0] + ' ahead".."'
-				else if (fromDate[1] == -1)	filterQuery += '"' + -fromDate[1] + " " + fromDate[0] + ' ago".."'
-				else if (fromDate[1] > 1) 	filterQuery += '"' + fromDate[1] + " " + fromDate[0] + 's ahead".."'
-				else filterQuery += '"' + -fromDate[1] + " " + fromDate[0] + 's ago".."';
-                        
-			if (toDate[1] == 0)				filterQuery += "current " + toDate[0] + '"];'
-				else if (toDate[1] == 1)	filterQuery += toDate[1] + " " + toDate[0] + ' ahead"];'
-				else if (toDate[1] == -1)	filterQuery += -toDate[1] + " " + toDate[0] + ' ago"];'
+                else if (fromDate[1] == 1)	filterQuery += '"' + fromDate[1] + " " + fromDate[0] + ' ahead".."'
+                else if (fromDate[1] == -1)	filterQuery += '"' + -fromDate[1] + " " + fromDate[0] + ' ago".."'
+                else if (fromDate[1] > 1) 	filterQuery += '"' + fromDate[1] + " " + fromDate[0] + 's ahead".."'
+                else filterQuery += '"' + -fromDate[1] + " " + fromDate[0] + 's ago".."';
+
+            if (toDate[1] == 0)				filterQuery += "current " + toDate[0] + '"];'
+                else if (toDate[1] == 1)	filterQuery += toDate[1] + " " + toDate[0] + ' ahead"];'
+                else if (toDate[1] == -1)	filterQuery += -toDate[1] + " " + toDate[0] + ' ago"];'
                 else if (toDate[1] > 1)		filterQuery += toDate[1] + " " + toDate[0] + 's ahead"];'
-				else filterQuery += -toDate[1] + " " + toDate[0] + 's ago"];';
-		}
-        
+                else filterQuery += -toDate[1] + " " + toDate[0] + 's ago"];';
+        }
+
         console.log('getDateFilter: END with ',filterQuery);
     	return filterQuery;
     },
     getCompoundFilter : function(dateFields,filterValues) {
-    	console.log('getCompoundFilter: START');
-                        
+        console.log('getCompoundFilter: START');
+
         let criteriaParts = [];
         filterValues.forEach(function(valIter) {
             console.log('getCompoundFilter: processing date value ',valIter);
-                            
+
             let valueParts = valIter.split('~~~');
             console.log('getCompoundFilter: date values parts extracted ',valueParts);
-                            
+
             let criteriaSubParts = [];
             dateFields.forEach(function(fieldIter,index) {
                 criteriaSubParts.push('\'' + fieldIter + '\' == \"' +  valueParts[index] + '\"');
             });
             criteriaParts.push('( ' + criteriaSubParts.join(' && ') + ' )');
         });
-    
+
         let filterQuery = 'q = filter q by ( ' + criteriaParts.join(' || ') + ' );';
-    	console.log('getCompoundFilter: END with ',filterQuery);
+        console.log('getCompoundFilter: END with ',filterQuery);
         return filterQuery;
     },
     getMeasureFilter : function(field,filterValues) {
     	console.log('getMeasureFilter: START for ',field);
                 
         let filterQuery = '';
-		if ((filterValues.length == 1) && ((filterValues[0]).length == 2)) {
+        if ((filterValues.length == 1) && ((filterValues[0]).length == 2)) {
             console.log('getMeasureFilter: processing range statement ');
             filterQuery = 'q = filter q by \'' 
-            			+ field +  '\' >= ' + filterValues[0][0]
+                        + field +  '\' >= ' + filterValues[0][0]
                         + '  && \'' + field +  '\' <= ' + filterValues[0][1] + ';';
         }
         else {
             console.warn('getMeasureFilter: step should provide range',JSON.stringify(filterValues));
         }
-        
-    	console.log('getMeasureFilter: END with ',filterQuery);
+
+        console.log('getMeasureFilter: END with ',filterQuery);
         return filterQuery;
     },
     getStandardFilter : function(field,filterValues) {
     	console.log('getStandardFilter: START for ',field);
                 
         let filterQuery = '';
-		if (filterValues.length == 1) {
+        if (filterValues.length == 1) {
             console.log('getStandardFilter: processing single == statement ');
             filterQuery = 'q = filter q by \'' + field
-            			+  '\' == \"' + filterValues[0] + '\";';
+                        +  '\' == \"' + filterValues[0] + '\";';
         }
         else {
             console.log('getStandardFilter: processing IN statement ');
             filterQuery	= 'q = filter q by \'' + field
-            			+  '\' in [\"' + filterValues.join('\", \"') + '\"];';
+                        +  '\' in [\"' + filterValues.join('\", \"') + '\"];';
         }        
-        
-    	console.log('getStandardFilter: END with ',filterQuery);
+
+        console.log('getStandardFilter: END with ',filterQuery);
         return filterQuery;
     },
     getMultipleFilter : function(stepMap,filterFields,filterValues) {
         console.log('getMultipleFilter: START');
 
-    	let criteriaParts = [];
+        let criteriaParts = [];
         filterValues.forEach(function(valIter) {
             console.log('getMultipleFilter: processing value ',valIter);
 
             let criteriaSubParts = [];
             filterFields.forEach(function(fieldIter,index) {
-            	console.log('getMultipleFilter: processing field ',fieldIter);
-                
+                console.log('getMultipleFilter: processing field ',fieldIter);
+
                 let fieldMap = stepMap[fieldIter];
-            	if (fieldMap) {
-            		console.log('getMultipleFilter: mapped field ',fieldMap);
-                    
-                	switch(fieldMap.type) {
-  						case "date":
-            				console.log('getMultipleFilter: ignoring date field ',fieldIter);
+                if (fieldMap) {
+                    console.log('getMultipleFilter: mapped field ',fieldMap);
+
+                    switch(fieldMap.type) {
+                        case "date":
+                            console.log('getMultipleFilter: ignoring date field ',fieldIter);
                             break;
                         case "compound":
-            				console.log('getMultipleFilter: handling compound date field ',fieldIter);
+                            console.log('getMultipleFilter: handling compound date field ',fieldIter);
                             let valueParts = valIter[index].split('~~~');
                             fieldMap.fields.forEach(function(fieldSubIter,subIndex) {
                                 criteriaSubParts.push('\'' + fieldSubIter + '\' == \"' +  valueParts[subIndex] + '\"');
                             });
                             break;
                         default :
-            				console.log('getMultipleFilter: handling standard field ',fieldIter);
+                            console.log('getMultipleFilter: handling standard field ',fieldIter);
                             criteriaSubParts.push('\'' + fieldMap.field + '\' == \"' +  valIter[index] + '\"');
                     }
                 }
@@ -1188,16 +1201,16 @@
         });
         
         let filterQuery = 'q = filter q by ( ' + criteriaParts.join(' || ') + ' );';
-    	console.log('getMultipleFilter: END with ',filterQuery);
+        console.log('getMultipleFilter: END with ',filterQuery);
         return filterQuery;   
-	},
-    
+    },
+
     //-------------------------------------------------------------------
     // Utility Methods to build the SOQL query out of the SAQL results
     //-------------------------------------------------------------------
     getSaqlIdSet : function(saqlResults,idFieldName) {
         console.log('getSaqlIdSet: START with result list size ', saqlResults.results.records.length);                          
-                            
+
         let idSet = new Set();
         saqlResults.results.records.forEach(function(idIter) {
             //console.log('getSaqlIdSet: processing ID ',idIter);
@@ -1214,38 +1227,38 @@
         let queryBase = component.get("v.queryBaseMerged");
         console.log('buildSOQL: queryBase fetched',queryBase);
 
-		let soqlQuery = null;
+        let soqlQuery = null;
         if (queryBase) {
 	        if (queryBase.includes('{{{ROWS}}}')) {
-    	    	console.log('buildSOQL: merging ID list',queryBase);
-            	let idListStr = '(\'' + targetIDList.join('\', \'') + '\')';
-    	    	console.log('buildSOQL: idListStr init',idListStr);
+                console.log('buildSOQL: merging ID list',queryBase);
+                let idListStr = '(\'' + targetIDList.join('\', \'') + '\')';
+                console.log('buildSOQL: idListStr init',idListStr);
                 soqlQuery = queryBase.replace('{{{ROWS}}}',idListStr);
-        	}
+            }
             else {
-    	    	console.log('buildSOQL: no ID list merge to do');
+                console.log('buildSOQL: no ID list merge to do');
                 soqlQuery = queryBase;
             }
         }
         else {
         	console.log('buildSOQL: no query to return');
         }
-        
+
         console.log('buildSOQL: END with query ',soqlQuery);
         return soqlQuery;
     },
     getSoqlIdSet : function(soqlResults,idList,targetLookup) {
         console.log('getSoqlIdSet: START with ID list size ', idList.length);                         
-          
+
         let idSet = new Set(idList);
         console.log('getSoqlIdSet: idSet init',idSet);
         
         soqlResults.forEach(function(iter){
             console.log('getSoqlIdSet: removing iter ',JSON.stringify(iter));
-			idSet.delete(iter[targetLookup]);
+            idSet.delete(iter[targetLookup]);
         });
         console.log('getSoqlIdSet: ID set init ',JSON.stringify(idSet));
-        
+
         console.log('getSoqlIdSet: END with ID set size ',idSet.size);
         return idSet;
     },
@@ -1255,46 +1268,65 @@
     //-------------------------------------------------------------------
     doAction : function(component,event,helper) {
         console.log('doAction: START');
-        
         component.set("v.runStep","4");
-        
+
         let actionResult = {
-			display: true,
-			title: $A.get("$Label.c.PEG_AnalyticsMassActionStep4"),
-			variant: "info"
-		};
-		component.set("v.actionResult",actionResult);
-		console.log('doAction: actionResult update ',actionResult);
-                
+            display: true,
+            title: $A.get("$Label.c.PEG_AnalyticsMassActionStep4"),
+            variant: "info"
+        };
+        component.set("v.actionResult",actionResult);
+        console.log('doAction: actionResult update ',actionResult);
+
         let soqlIdList = component.get("v.soqlIdList");
         console.log('doAction: soql Id List fetched ',soqlIdList);
-        
+
         if ((!soqlIdList) && (soqlIdList.length == 0)) {
-        	console.warn('doAction: END no target IDs to add as campaign members!');    
+            console.warn('doAction: END no target IDs to add as campaign members!');    
             return;
         }
-        
+
         let objectChanges = event.getParams().fields; 
         console.log('doAction: objectChanges fetched from event ',JSON.stringify(objectChanges));
-        
+
         let baseTargetJson = component.get("v.baseTargetJson");
         console.log('doAction: baseTargetJson fetched ',JSON.stringify(baseTargetJson));
-            
+
         let newObject = Object.assign({}, baseTargetJson);
         for (let field in objectChanges) {
             if (objectChanges[field]) newObject[field] = objectChanges[field];
         }
         console.log('doAction: newObject init',JSON.stringify(newObject));
-        
+
         let targetLookup = component.get("v.targetLookup"); 
         console.log('doAction: targetLookup fetched ',targetLookup);        
-        
+
+        let otherFields = component.get("v.otherFieldsJson");
+        console.log('doAction: otherFields fetched ',JSON.stringify(otherFields)); 
+        let idFieldName = component.get("v.idFieldName");                
+        console.log('doAction: idFieldName fetched',idFieldName);
+        let saqlResults = component.get("v.saqlResults");
+        console.log('doAction: saqlResults fetched ',JSON.stringify(saqlResults));
+
         let newRecordList = [];
-        soqlIdList.forEach(function(iter) {
+        soqlIdList.forEach(iter => {
             console.log('doAction: registering new record for ',iter);
             let newRow = Object.assign({}, newObject);
-            console.log('doAction: newRow initialized',JSON.stringify(newRow));
+            //console.log('doAction: newRow initialized',JSON.stringify(newRow));
             newRow[targetLookup] = iter;
+
+            if (otherFields) {
+                ///to review TODO TODO
+                let rowData = saqlResults.results.records.find(item => item[idFieldName] == iter);
+                if (rowData) {
+                    otherFields.forEach(iterField => {
+                        newRow[iterField.target] = rowData[iterField.name];
+                    });
+                }
+                else {
+                    console.warn('doAction: rowData not found for recordId ',iter);
+                }
+            }
             console.log('doAction: newRow init',JSON.stringify(newRow));
             newRecordList.push(newRow);
         });
@@ -1328,47 +1360,47 @@
             console.log('processBatch: processing batch');
      
         	component.find('soqlUtil').runDML(
-            	'insert',
-            	batchRecordList,
-            	function(dmlResult,dmlError) {
-                	console.log('processBatch: result from DML for iter ' + curIter);
-                	if (dmlResult) {
-                    	let actionProgress = Math.round((curIter + 1) * batchSize * 100  / recordList.length);
-                		console.log('processBatch: actionProgress evaluated ', actionProgress);
-                    	component.set("v.actionProgress",actionProgress);
+                'insert',
+                batchRecordList,
+                function(dmlResult,dmlError) {
+                    console.log('processBatch: result from DML for iter ' + curIter);
+                    if (dmlResult) {
+                        let actionProgress = Math.round((curIter + 1) * batchSize * 100  / recordList.length);
+                        console.log('processBatch: actionProgress evaluated ', actionProgress);
+                        component.set("v.actionProgress",actionProgress);
 
-                		console.log('processBatch: END launching next batch');
+                        console.log('processBatch: END launching next batch');
                         helper.processBatch(curIter+1,batchSize,recordList,component,helper);
-                	}
-                	else {
-                    	let actionResult = {
-							display: true,
-							title: $A.get("$Label.c.PEG_AnalyticsMassActionDmlError"),
-							error: dmlError,
-							variant: "error"
-						};
-						component.set("v.actionResult",actionResult);
-						console.log('processBatch: actionResult update ',actionResult);
+                    }
+                    else {
+                        let actionResult = {
+                            display: true,
+                            title: $A.get("$Label.c.PEG_AnalyticsMassActionDmlError"),
+                            error: dmlError,
+                            variant: "error"
+                        };
+                        component.set("v.actionResult",actionResult);
+                        console.log('processBatch: actionResult update ',actionResult);
                     
-                    	//component.set("v.actionError",JSON.stringify(dmlError));
-                    	console.log('processBatch: END dmlError received',dmlError);
-                	}
+                        //component.set("v.actionError",JSON.stringify(dmlError));
+                        console.log('processBatch: END dmlError received',dmlError);
+                    }
             });
             console.log('processBatch: DML sent'); 
         }
-		else {
-			console.log('processBatch: last batch reached');
+        else {
+            console.log('processBatch: last batch reached');
             component.set("v.isRunning",false);
-                    
-			let refreshTab = component.get("v.refreshTab");
-			console.log('processBatch: refreshTab fetched',refreshTab);
-			if (refreshTab) {
-				console.log('processBatch: END triggering refresh');
-				$A.get("e.force:refreshView").fire();
-			}
-			else {
-				console.log('processBatch: END no refresh');
-			}
-		}
-	}
+
+            let refreshTab = component.get("v.refreshTab");
+            console.log('processBatch: refreshTab fetched',refreshTab);
+            if (refreshTab) {
+                console.log('processBatch: END triggering refresh');
+                $A.get("e.force:refreshView").fire();
+            }
+            else {
+                console.log('processBatch: END no refresh');
+            }
+        }
+    }
 })

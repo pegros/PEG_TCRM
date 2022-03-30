@@ -48,9 +48,12 @@
         <li><code>Dataset Name</code> identifying the dataset to be used for the SAQL
                 targeting query (within the possible N connected ones used by the Dashboard) </li>
         <li><code>ID Field Name</code> identifying the field in this dataset to be used as target IDs</li>
+        <li><code>Other fields</code> (optional) providing a list of other fields to fetch via SAQL
+            from the dataset to be used the insert action afterwards as a stringified JSON list, like
+            [{"name":"TcrmFieldName1","target":"CoreFieldApiName1"},...] (non compatible with the Group By parameter below).</li>
         <li><code>Use Group by?</code> (optional) to implement a group by SAQL query if multiple
                 entries may have the same target ID in the dataset (and reduce the impact of the max.
-                10 000 rows constraint)</li>
+                25 000 rows constraint)</li>
         <li><code>Action Label</code> of the main action button (located within the card
                     container header, also supporting custom labels)</li>
         <li><code>Action Message</code> displayed in the action popup to provide (optional) information
@@ -94,7 +97,7 @@
             advanced JSON configuration (SAQL and SOQL steps, custom bindings...) is not
             supported. --> Only dataset connections, global filters and widget steps
             configured directly from the Analytics Studio are currently supported.</li>
-        <li>DMLs and SAQL queries are limited to 10 000 records. --> The components therefore
+        <li>DMLs and SAQL queries are limited to 25 000 records. --> The components therefore
             does not support adding more than such a number.</li>
         <li>Various information/error messages or action labels displayed by the component
             are managed via <code>PEG_AnalyticsMassAction...</code> custom labels. 

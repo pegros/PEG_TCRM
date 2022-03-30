@@ -46,7 +46,7 @@ the following features being currently not supported:
 * bindings
 * SAQL steps
 
-Also, the standard _max 10 000 rows_ **SAQL** limit apply to target records in Tableau CRM,
+Also, the standard _max 25 000 rows_ **SAQL** limit apply to target records in Tableau CRM,
 but batch/pagination size may be set in the component to avoid governor limits / timeouts
 when executing the mass action on Salesforce core side.
 
@@ -94,8 +94,11 @@ Most of not all of the configuration happens in the App Builder. The main proper
 * `Dataset Name` identifying the dataset to be used for the SAQL targeting query
 (within the possible N connected ones used by the Dashboard) 
 * `ID Field Name` identifying the field in this dataset to be used as target IDs
+* `Other fields` (optional) providing a list of other fields to fetch via SAQL
+from the dataset to be used the insert action afterwards as a stringified JSON list, like
+`[{"name":"TcrmFieldName1","target":"CoreFieldApiName1"},...]` (non compatible with the `Group By` parameter below)
 * `Use Group by?` (optional) to implement a group by SAQL query if multiple entries may
-have the same target ID in the dataset (and reduce the impact of the max. 10 000 rows constraint)
+have the same target ID in the dataset (and reduce the impact of the max. 25 000 rows constraint)
 * `SOQL Control Query` providing the SOQL query template to be used to filter out already
 existing records (returning target record IDs with an `in {{{ROWS}}}` where clause evaluated
 upon action) 

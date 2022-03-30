@@ -26,6 +26,9 @@
                         label="ID Field Name"
                         default="Id"
                         description="API Name of the dataset field containing the member ID." />
+    <design:attribute   name="otherFields"
+                        label="Other fields"
+                        description='JSON List of additional fields in the EA dataset to be fetched with their target field names as [{"name":"TcrmFieldName","target":"CoreFieldName"}...] (ignored if useGroup activated).' />
     <design:attribute   name="useGroup"
                         label='Use "Group By?"'
                         default="false"
