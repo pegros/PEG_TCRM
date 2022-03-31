@@ -278,6 +278,14 @@
                                                 message="{!v.actionResult.message}"
                                                 error="{!v.actionResult.error}"
                                                 variant="{!v.actionResult.variant}" />
+
+                            <aura:if isTrue="{!(v.actionResult.variant == 'error')}">
+                                <lightning:buttonGroup	class="slds-m-top_medium slds-align_absolute-center" >
+                                    <lightning:button	iconName="utility:close"
+                                                        label="{!$Label.c.PEG_AnalyticsMassActionCancel}" 
+                                                        onclick="{!c.cancelAction}" />
+                                </lightning:buttonGroup>
+                            </aura:if>
                         </aura:if>
 
                         <aura:if isTrue="{! and(v.runStep == '3', v.actionResult.variant != 'error')}">
@@ -286,41 +294,57 @@
                                 {!format($Label.c.PEG_AnalyticsMassActionMessage, v.saqlIdList.length, v.soqlIdList.length)}
                             </div>
 
-                            <lightning:recordEditForm   aura:id="record-edit-form"
-                                                        recordTypeId="{!v.baseTargetJson.RecordTypeId}"
-                                                        objectApiName="{!v.baseTargetJson.sobjectType}"
-                                                        onsubmit="{!c.handleSubmit}"
-                                                        onload="{!c.handleLoad}">
-                                <lightning:messages/>
-                                <aura:iteration items="{!v.fieldListJson}" var="eachField"> 
-                                    <lightning:inputField	aura:id="{!'field-' + eachField.name}"
-                                                            fieldName="{!eachField.name}"
-                                                            required="{!eachField.required}"
-                                                            onchange="{!c.handleFieldChange}" />
-                                </aura:iteration>
+                            <aura:if isTrue="{!v.fieldListJson.length > 0}">
+                                <lightning:recordEditForm   aura:id="record-edit-form"
+                                                            recordTypeId="{!v.baseTargetJson.RecordTypeId}"
+                                                            objectApiName="{!v.baseTargetJson.sobjectType}"
+                                                            onsubmit="{!c.handleSubmit}"
+                                                            onload="{!c.handleLoad}">
+                                    <lightning:messages/>
+                                    <aura:iteration items="{!v.fieldListJson}" var="eachField"> 
+                                        <lightning:inputField	aura:id="{!'field-' + eachField.name}"
+                                                                fieldName="{!eachField.name}"
+                                                                required="{!eachField.required}"
+                                                                onchange="{!c.handleFieldChange}" />
+                                    </aura:iteration>
 
-                                <lightning:buttonGroup	class="slds-m-top_small slds-align_absolute-center" >
-                                    <lightning:button	iconName="utility:close"
-                                                        label="{!$Label.c.PEG_AnalyticsMassActionCancel}" 
-                                                        onclick="{!c.cancelAction}" />
-                                    <lightning:button	type="submit"
-                                                        iconName="utility:check"
-                                                        variant="brand"
-                                                        disabled="{! or(v.soqlIdList.length == 0, v.actionError.length > 0)}"
-                                                        label="{!$Label.c.PEG_AnalyticsMassActionValidate}" />
-                                </lightning:buttonGroup>
+                                    <lightning:buttonGroup	class="slds-m-top_small slds-align_absolute-center" >
+                                        <lightning:button	iconName="utility:close"
+                                                            label="{!$Label.c.PEG_AnalyticsMassActionCancel}" 
+                                                            onclick="{!c.cancelAction}" />
+                                        <lightning:button	type="submit"
+                                                            iconName="utility:check"
+                                                            variant="brand"
+                                                            disabled="{! or(v.soqlIdList.length == 0, v.actionError.length > 0)}"
+                                                            label="{!$Label.c.PEG_AnalyticsMassActionValidate}" />
+                                    </lightning:buttonGroup>
 
-                                <aura:if isTrue="{!v.runStep > 3}">
-                                    <lightning:spinner alternativeText="Loading" size="medium" />
-                                </aura:if>
-                            </lightning:recordEditForm>
+                                    <aura:if isTrue="{!v.runStep > 3}">
+                                        <lightning:spinner alternativeText="Loading" size="medium" />
+                                    </aura:if>
+                                </lightning:recordEditForm>
+                                <aura:set attribute="else">
+                                    <lightning:buttonGroup	class="slds-m-top_small slds-align_absolute-center" >
+                                        <lightning:button	iconName="utility:close"
+                                                            label="{!$Label.c.PEG_AnalyticsMassActionCancel}" 
+                                                            onclick="{!c.cancelAction}" />
+                                        <lightning:button	onclick="{!c.handleSubmit}"
+                                                            iconName="utility:check"
+                                                            variant="brand"
+                                                            disabled="{! or(v.soqlIdList.length == 0, v.actionError.length > 0)}"
+                                                            label="{!$Label.c.PEG_AnalyticsMassActionValidate}" />
+                                    </lightning:buttonGroup>
+                                </aura:set>
+                            </aura:if>
                         </aura:if>
 
                         <aura:if isTrue="{! and(v.runStep == '4', v.actionResult.variant != 'error')}">
-                            <div class="slds-var-p-around_small">
+                            <div class="slds-var-p-around_small slds-m-top_small">
                                 <lightning:progressBar value="{!v.actionProgress}" size="large" />
                             </div>
-                            <lightning:spinner alternativeText="Executing" size="small" />
+                            <div class="slds-is-relative" style="height:100px;">
+                                <lightning:spinner alternativeText="Executing" size="medium" />
+                            </div>
                         </aura:if>
                     </div>
 

@@ -49,8 +49,16 @@
         <value>SOQL Query Error</value>
     </labels>
     <labels>
+        <fullName>PEG_AnalyticsMassActionProcessingError</fullName>
+        <categories>PEG, Analytics, Lightning, Error</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>PEG_AnalyticsMassActionProcessingError</shortDescription>
+        <value>Processing Failure</value>
+    </labels>
+    <labels>
         <fullName>PEG_AnalyticsMassActionStep1</fullName>
-        <categories>PEG, Analytics,</categories>
+        <categories>PEG, Analytics, Lightning</categories>
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>PEG_AnalyticsMassActionStep1</shortDescription>
@@ -74,11 +82,11 @@
     </labels>
     <labels>
         <fullName>PEG_AnalyticsMassActionStep4</fullName>
-        <categories>PEG,Analytics, Lightning</categories>
+        <categories>PEG, Analytics, Lightning</categories>
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>PEG_AnalyticsMassActionStep4</shortDescription>
-        <value>Operation executed</value>
+        <value>Preparing and inserting data</value>
     </labels>
     <labels>
         <fullName>PEG_AnalyticsMassActionValidate</fullName>

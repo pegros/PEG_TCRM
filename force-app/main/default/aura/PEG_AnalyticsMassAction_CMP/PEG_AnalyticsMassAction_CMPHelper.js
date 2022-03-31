@@ -89,7 +89,8 @@
             component.set("v.fieldListJson",fieldListJson);
         }
         else {
-            console.warn('doInit: list of fields missing');            
+            console.warn('doInit: list of fields missing');  
+            component.set("v.fieldListJson",[]);
         }
 
         let otherFields = component.get("v.otherFields");
@@ -1278,29 +1279,13 @@
         component.set("v.actionResult",actionResult);
         console.log('doAction: actionResult update ',actionResult);
 
+        // Context fetch
         let soqlIdList = component.get("v.soqlIdList");
         console.log('doAction: soql Id List fetched ',soqlIdList);
-
-        if ((!soqlIdList) && (soqlIdList.length == 0)) {
-            console.warn('doAction: END no target IDs to add as campaign members!');    
-            return;
-        }
-
-        let objectChanges = event.getParams().fields; 
-        console.log('doAction: objectChanges fetched from event ',JSON.stringify(objectChanges));
-
         let baseTargetJson = component.get("v.baseTargetJson");
         console.log('doAction: baseTargetJson fetched ',JSON.stringify(baseTargetJson));
-
-        let newObject = Object.assign({}, baseTargetJson);
-        for (let field in objectChanges) {
-            if (objectChanges[field]) newObject[field] = objectChanges[field];
-        }
-        console.log('doAction: newObject init',JSON.stringify(newObject));
-
         let targetLookup = component.get("v.targetLookup"); 
         console.log('doAction: targetLookup fetched ',targetLookup);        
-
         let otherFields = component.get("v.otherFieldsJson");
         console.log('doAction: otherFields fetched ',JSON.stringify(otherFields)); 
         let idFieldName = component.get("v.idFieldName");                
@@ -1308,36 +1293,61 @@
         let saqlResults = component.get("v.saqlResults");
         console.log('doAction: saqlResults fetched ',JSON.stringify(saqlResults));
 
-        let newRecordList = [];
-        soqlIdList.forEach(iter => {
-            console.log('doAction: registering new record for ',iter);
-            let newRow = Object.assign({}, newObject);
-            //console.log('doAction: newRow initialized',JSON.stringify(newRow));
-            newRow[targetLookup] = iter;
+        if ((!soqlIdList) && (soqlIdList.length == 0)) {
+            let actionResult = {
+                display: true,
+                title: $A.get("$Label.c.PEG_AnalyticsMassActionProcessingError"),
+                message: "No target IDs to add as campaign members!",
+                variant: "error"
+            };
+            component.set("v.actionResult",actionResult);
+            console.warn('doAction: END no target IDs to add as campaign members!');    
+            return;
+        }
 
-            if (otherFields) {
-                ///to review TODO TODO
-                let rowData = saqlResults.results.records.find(item => item[idFieldName] == iter);
-                if (rowData) {
-                    otherFields.forEach(iterField => {
-                        newRow[iterField.target] = rowData[iterField.name];
-                    });
-                }
-                else {
-                    console.warn('doAction: rowData not found for recordId ',iter);
-                }
+        // Hack to force display of progress bar right upon click
+        setTimeout(() => { 
+            let objectChanges = event.getParams().fields; 
+            console.log('doAction: objectChanges fetched from event ',JSON.stringify(objectChanges));
+
+            let newObject = Object.assign({}, baseTargetJson);
+            for (let field in objectChanges) {
+                if (objectChanges[field]) newObject[field] = objectChanges[field];
             }
-            console.log('doAction: newRow init',JSON.stringify(newRow));
-            newRecordList.push(newRow);
-        });
-        console.log('doAction: new Members init',JSON.stringify(newRecordList));
-        
-        let batchSize = component.get("v.batchSize");
-        console.log('doAction: batchSize fetched ',batchSize);
-        batchSize = (batchSize == 0 ? newRecordList.length : batchSize);
-        component.set("v.actionProgress",1);
-        helper.processBatch(0,batchSize,newRecordList,component,helper);
-        console.log('doAction: END');
+            console.log('doAction: newObject init',JSON.stringify(newObject));
+
+            let newRecordList = [];
+            soqlIdList.forEach(iter => {
+                console.log('doAction: registering new record for ',iter);
+                let newRow = Object.assign({}, newObject);
+                    //console.log('doAction: newRow initialized',JSON.stringify(newRow));
+                newRow[targetLookup] = iter;
+
+                if (otherFields) {
+                    ///to review TODO TODO
+                    let rowData = saqlResults.results.records.find(item => item[idFieldName] == iter);
+                    if (rowData) {
+                        otherFields.forEach(iterField => {
+                            newRow[iterField.target] = rowData[iterField.name];
+                        });
+                    }
+                    else {
+                        console.warn('doAction: rowData not found for recordId ',iter);
+                    }
+                }
+                //console.log('doAction: newRow init',JSON.stringify(newRow));
+                newRecordList.push(newRow);
+            });
+            console.log('doAction: new Members init',JSON.stringify(newRecordList));
+
+            let batchSize = component.get("v.batchSize");
+            console.log('doAction: batchSize fetched ',batchSize);
+            batchSize = (batchSize == 0 ? newRecordList.length : batchSize);
+            component.set("v.actionProgress",1);
+            helper.processBatch(0,batchSize,newRecordList,component,helper);
+            console.log('doAction: END');
+        }, 50);
+        console.log('doAction: starting process');
     },
     processBatch : function(curIter,batchSize,recordList,component,helper) {
         console.log('processBatch: START for iter ',curIter);
