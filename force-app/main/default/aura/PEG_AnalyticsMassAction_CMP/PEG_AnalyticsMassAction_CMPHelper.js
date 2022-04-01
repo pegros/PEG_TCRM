@@ -486,47 +486,53 @@
         Object.keys(steps).forEach(function(stepItemName){
         	console.log('initSteps: processing stepItem',stepItemName);
             let itemDesc = steps[stepItemName];
-            console.log('initSteps: stepItem value ',JSON.stringify(itemDesc.datasets));
-            let itemDS = helper.DATASETS[itemDesc.datasets[0].id];//itemDesc.datasets[0];
-            console.log('initSteps: stepItem DS name fetched ',itemDS.name);
-            
-            let itemInitDesc = initSteps[stepItemName];
-            if (itemInitDesc) {
-            	console.log('initSteps: stepItem init value ',JSON.stringify(itemInitDesc));
+            console.log('initSteps: stepItem desc ',JSON.stringify(itemDesc));
 
-                stepMapping[stepItemName] = {};
-                itemInitDesc.metadata.groups.forEach(function(fieldItem){
-        			console.log('initSteps: processing fieldItem',fieldItem);
-                                        
-                    if (fieldItem.includes('~~~')){
-                    	console.log('initSteps: processing compound date field');
-                        
-                        let mapping = helper.mapCompoundField(fieldItem, itemDS, dsDesc, linkMapping);
-                        if (mapping) {
-                            console.log('initSteps: registering compound date field',fieldItem);
-                        	stepMapping[stepItemName][fieldItem] = mapping;
+            if (itemDesc.datasets) {
+                console.log('initSteps: stepItem value ',JSON.stringify(itemDesc.datasets));
+                let itemDS = helper.DATASETS[itemDesc.datasets[0].id];//itemDesc.datasets[0];
+                console.log('initSteps: stepItem DS name fetched ',itemDS.name);
+
+                let itemInitDesc = initSteps[stepItemName];
+                if (itemInitDesc) {
+                    console.log('initSteps: stepItem init value ',JSON.stringify(itemInitDesc));
+
+                    stepMapping[stepItemName] = {};
+                    itemInitDesc.metadata.groups.forEach(function(fieldItem){
+                        console.log('initSteps: processing fieldItem',fieldItem);
+
+                        if (fieldItem.includes('~~~')){
+                            console.log('initSteps: processing compound date field');
+
+                            let mapping = helper.mapCompoundField(fieldItem, itemDS, dsDesc, linkMapping);
+                            if (mapping) {
+                                console.log('initSteps: registering compound date field',fieldItem);
+                                stepMapping[stepItemName][fieldItem] = mapping;
+                            }
+                            else {
+                                console.warn('initSteps: compound date field ignored',fieldItem);                            
+                            }
                         }
                         else {
-                            console.warn('initSteps: compound date field ignored',fieldItem);                            
+                            console.log('initSteps: processing standard field');
+
+                            let mapping = helper.mapStandardField(fieldItem, itemDS, dsDesc, linkMapping);
+                            if (mapping) {
+                                console.log('initSteps: registering standard field',fieldItem);
+                                stepMapping[stepItemName][fieldItem] = mapping;
+                            }
+                            else {
+                                console.warn('initSteps: standard field ignored',fieldItem);                            
+                            }
                         }
-                    }
-                    else {
-                    	console.log('initSteps: processing standard field');
-                        
-                        let mapping = helper.mapStandardField(fieldItem, itemDS, dsDesc, linkMapping);
-                        if (mapping) {
-                            console.log('initSteps: registering standard field',fieldItem);
-                        	stepMapping[stepItemName][fieldItem] = mapping;
-                        }
-                        else {
-                            console.warn('initSteps: standard field ignored',fieldItem);                            
-                        }
-                    }
-                    
-                });
+                    });
+                }
+                else {
+            	    console.warn('initSteps: missing itemInitDesc (step not used)',stepItemName);
+                }
             }
             else {
-            	console.warn('initSteps: missing itemInitDesc (step not used)',stepItemName);
+                console.warn('initSteps: ignoring step ',JSON.stringify(itemDesc));
             }
         });
         
