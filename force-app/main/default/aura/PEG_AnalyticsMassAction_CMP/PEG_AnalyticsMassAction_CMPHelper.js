@@ -47,7 +47,7 @@
     //-------------------------------------------------------------------
     doInit : function(component, event, helper) {
         console.log('doInit: START');
-        
+
         let actionResult = {
             display: false
         };
@@ -103,7 +103,7 @@
         else {
             console.warn('doInit: other EA/Core Fields missing');            
         }
-  
+
         let baseTarget = component.get("v.baseTarget");
         let queryBase = component.get("v.queryBase");
         
@@ -119,23 +119,23 @@
                     configBase,
                     null,
                     function(mergeResult,mergeError) {
-                		console.log('doInit: result from merge',mergeResult);
-                		if (mergeResult) {
+                        console.log('doInit: result from merge',mergeResult);
+                        if (mergeResult) {
                             let configBaseJson = JSON.parse(mergeResult);
-							console.log('doInit: configBaseJson parsed',configBaseJson);
-                			component.set("v.baseTargetJson",configBaseJson.target);
-                			component.set("v.queryBaseMerged",configBaseJson.query);
+                            console.log('doInit: configBaseJson parsed',configBaseJson);
+                            component.set("v.baseTargetJson",configBaseJson.target);
+                            component.set("v.queryBaseMerged",configBaseJson.query);
                             console.log('doInit: END OK / after merge');
                         }
                         else {
                             console.warn('doInit: END KO / merging issue',mergeError);
                         }
                     });
-				console.log('doInit: merge triggered');
+                console.log('doInit: merge triggered');
             }
             else {
                 let baseTargetJson = JSON.parse(baseTarget);
-				console.log('doInit: baseTargetJson parsed',baseTargetJson);
+                console.log('doInit: baseTargetJson parsed',baseTargetJson);
                 component.set("v.baseTargetJson",baseTargetJson);
                 console.log('doInit: setting queryBaseMerged without merge ',queryBase);
                 component.set("v.queryBaseMerged",queryBase);
