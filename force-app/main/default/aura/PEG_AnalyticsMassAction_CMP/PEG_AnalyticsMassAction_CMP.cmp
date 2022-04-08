@@ -12,12 +12,19 @@
     <aura:attribute name="actionLabel"      type="String"
                     access="global"
                     description="Label of the action button." />
+    <aura:attribute name="actionVariant"    type="String"
+                    access="global"
+                    description="Variant of the action button." />
     <aura:attribute name="actionMessage"    type="String"
                     access="global"
                     description="Message displayed in the action popup." />
+    <aura:attribute name="showBorder"       type="Boolean"
+                    access="global"         default="false"
+                    description="Flag to activate card border."/>
+    
     <aura:attribute name="showDebug"        type="Boolean"
                     access="global"         default="false"
-                    description="Show debug details."/>
+                    description="Flag to activate debug mode."/>
 
     <!-- Component Dashboard Configuration -->
     <aura:attribute name="dashboardName"    type="String"
@@ -175,12 +182,12 @@
                      	sObjectName="{!v.sObjectName}"/>
 
     <!-- Component Display -->
-    <lightning:card title="{!v.title}" iconName="{#v.icon}">
+    <lightning:card title="{!v.title}" iconName="{#v.icon}" class="{!(v.showBorder ? 'slds-card_boundary' : '')}">
 
         <!-- Action trigger button -->
         <aura:set attribute="actions">          
-          <lightning:button     variant="neutral"           label="{!v.actionLabel}"
-                                title="{!v.actionLabel}"    disabled="{! or(!v.initDone,v.isRunning)}"	
+            <lightning:button   variant="{#v.actionVariant}"    label="{#v.actionLabel}"
+                                title="{#v.actionLabel}"        disabled="{! or(!v.initDone,v.isRunning)}"	
                                 onclick="{!c.launchAction}"/>
         </aura:set>
 

@@ -7,6 +7,10 @@
                         label="Component Icon"
                         default="standard:dashboard_ea"
                         description="Icon name to display." />
+    <design:attribute   name="showBorder"
+                        label="Show Border?"
+                        default="false"
+                        description="Flag to activate card border."/>
 
     <design:attribute   name="dashboardName"
                         label="Dashboard Name"
@@ -50,6 +54,11 @@
     <design:attribute   name="actionMessage"
                         label="Action Message"
                         description="Message displayed in the action popup." />
+    <design:attribute   name="actionVariant"
+                        label="Action Variant"
+                        default="neutral"
+                        datasource="base,neutral,brand,brand-outline,destructive,destructive-text,inverse,success"
+                        description="Variant of the action button." />
     <design:attribute   name="queryBase"
                         label="SOQL Control Query"
                         default="SELECT Id, Compte__c FROM DemandeGestion__c WHERE Compte__c in {{{ROWS}}} AND Termine__c = false WITH SECURITY_ENFORCED"
