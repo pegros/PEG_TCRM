@@ -274,7 +274,7 @@
                     <div    class="slds-modal__content slds-p-around_medium" id="modal-content-id-1"
                             style="min-height:50vh !important;">
 
-                        <aura:if isTrue="{!v.actionMessage}">
+                        <aura:if isTrue="{!and(v.runStep != '4', v.actionMessage)}">
                             <c:PEG_Message_CMP  title="{!v.actionMessage}"    
                                                 theme="light"
                                                 variant="info" />
