@@ -786,9 +786,15 @@
 
                             let saqlJson = JSON.parse(saqlData);
                             console.log('startAction: SDK SAQL data parsed ',saqlJson);  
-                            if (saqlJson) component.set("v.saqlResults",saqlJson);
 
-                           	let saqlIdList = Array.from(helper.getSaqlIdSet(saqlJson,idFieldName));
+                            //CHANGE START
+                            //if (saqlJson) component.set("v.saqlResults",saqlJson);
+                            let saqlRecords = helper.getSaqlIdSet(saqlJson,idFieldName);
+                            component.set("v.saqlResults",saqlRecords);
+
+                            //let saqlIdList = Array.from(helper.getSaqlIdSet(saqlJson,idFieldName));
+                            let saqlIdList =  Object.keys(saqlRecords);
+                            //CHANGE END
                             console.log('startAction: target ID list initialized from SAQL ',saqlIdList);
                             component.set("v.saqlIdList",saqlIdList);
 
@@ -1218,15 +1224,23 @@
     getSaqlIdSet : function(saqlResults,idFieldName) {
         console.log('getSaqlIdSet: START with result list size ', saqlResults.results.records.length);                          
 
-        let idSet = new Set();
+        //CHANGE START
+        //let idSet = new Set();
+        let saqlRecords = {};
         saqlResults.results.records.forEach(function(idIter) {
             //console.log('getSaqlIdSet: processing ID ',idIter);
-            idSet.add(idIter[idFieldName]);
+            //idSet.add(idIter[idFieldName]);
+            saqlRecords[idIter[idFieldName]] = idIter;
         });
-        console.log('getSaqlIdSet: ID set init ',JSON.stringify(idSet));
+        //console.log('getSaqlIdSet: ID set init ', idSet);
+        console.log('getSaqlIdSet: saqlRecords IDs init ',JSON.stringify(Object.keys(saqlRecords)));
+        console.log('getSaqlIdSet: saqlRecords init ',JSON.stringify(saqlRecords));
 
-        console.log('getSaqlIdSet: END with set size ',idSet.size);
-        return idSet;
+        //console.log('getSaqlIdSet: END with set size ',idSet.size);
+        console.log('getSaqlIdSet: END with size ', (Object.keys(saqlRecords)).size);
+        //return idSet;
+        return saqlRecords;
+        //CHANGE END
     },
     buildSOQL : function(targetIDList, component) {
         console.log('buildSOQL: START');
@@ -1315,7 +1329,7 @@
         let batchSize = component.get("v.batchSize");
         console.log('doAction: batchSize fetched ',batchSize);
         batchSize = (batchSize == 0 ? newRecordList.length : batchSize);
-        component.set("v.actionProgress",1);
+        component.set("v.actionProgress",10);
 
         // Context Fetch
         let targetLookup = component.get("v.targetLookup"); 
@@ -1334,64 +1348,6 @@
         }, 50);
         console.log('doAction: starting process');
     },
-    /*
-    processBatch : function(curIter,batchSize,recordList,component,helper) {
-        console.log('processBatch: START for iter ',curIter);
-        console.log('processBatch: recordList length to process ', recordList.length);
-
-        let curIndex = curIter * batchSize;
-        console.log('processBatch: curIndex to process ', curIndex);        
-        console.log('processBatch: batchSize provided ', batchSize); 
-        let batchRecordList = recordList.slice(curIndex, curIndex + batchSize);
-        console.log('processBatch: batchRecordList for iter ', JSON.stringify(batchRecordList));
-
-        if (batchRecordList.length > 0) {
-            console.log('processBatch: processing batch');
-
-            component.find('soqlUtil').runDML(
-                'insert',
-                batchRecordList,
-                function(dmlResult,dmlError) {
-                    console.log('processBatch: result from DML for iter ' + curIter);
-                    if (dmlResult) {
-                        let actionProgress = Math.round((curIter + 1) * batchSize * 100  / recordList.length);
-                        console.log('processBatch: actionProgress evaluated ', actionProgress);
-                        component.set("v.actionProgress",actionProgress);
-
-                        console.log('processBatch: END launching next batch');
-                        helper.processBatch(curIter+1,batchSize,recordList,component,helper);
-                    }
-                    else {
-                        let actionResult = {
-                            display: true,
-                            title: $A.get("$Label.c.PEG_AnalyticsMassActionDmlError"),
-                            error: dmlError,
-                            variant: "error"
-                        };
-                        component.set("v.actionResult",actionResult);
-                        console.log('processBatch: actionResult update ',actionResult);
-
-                        //component.set("v.actionError",JSON.stringify(dmlError));
-                        console.log('processBatch: END dmlError received',dmlError);
-                    }
-            });
-            console.log('processBatch: DML sent'); 
-        }
-        else {
-            console.log('processBatch: last batch reached');
-            component.set("v.isRunning",false);
-
-            let refreshTab = component.get("v.refreshTab");
-            console.log('processBatch: refreshTab fetched',refreshTab);
-            if (refreshTab) {
-                console.log('processBatch: END triggering refresh');
-                $A.get("e.force:refreshView").fire();
-            }
-            else {
-                console.log('processBatch: END no refresh');
-            }
-        }
-    },*/
     processBatch : function(soqlIdList,recordTemplate,targetLookup,idFieldName,otherFields,saqlResults,iteration,batchSize,component,helper) {
         console.log('processBatch: START iteration ', iteration);
 
@@ -1405,31 +1361,41 @@
         console.log('processBatch: batchList sliced ', JSON.stringify(batchIdList));
 
         if (batchIdList.length > 0) {
-            console.log('processBatch: processing batch');
+            console.log('processBatch: processing batch TS ', Date.now());
 
             // Batch Record List Preparation
             let batchRecordList = [];
-            batchIdList.forEach(iter => {
+            batchIdList.forEach((iter,index) => {
                 //console.log('processBatch: registering new record for ',iter);
                 let newRow = Object.assign({}, recordTemplate);
                 newRow[targetLookup] = iter;
                 if (otherFields) {
-                    let rowData = saqlResults.results.records.find(item => item[idFieldName] == iter);
+                    //CHANGE START
+                    //let rowData = saqlResults.results.records.find(item => item[idFieldName] == iter);
+                    let rowData = saqlResults[iter];
+                    //console.log('processBatch: index check ', ((saqlResults.results.records)[recordIndex + index])[idFieldName]);
+                    //CHANGE END
                     if (rowData) {otherFields.forEach(iterField => {newRow[iterField.target] = rowData[iterField.name];});}
                     else {console.warn('getBatchRecords: rowData not found for recordId ',iter);}
                 }
                 batchRecordList.push(newRow);
             });
+            console.log('processBatch: batchRecordList init TS ', Date.now());
             //console.log('processBatch: batchRecordList init ',JSON.stringify(batchRecordList));
             console.log('processBatch: batchRecordList init with #items ',batchRecordList.length);
+
+            let actionProgress = 10 + Math.round((iteration + 0.5) * batchSize * 90  / soqlIdList.length);
+            console.log('processBatch: actionProgress evaluated ', actionProgress);
+            component.set("v.actionProgress",actionProgress);
 
             component.find('soqlUtil').runDML(
                 'insert',
                 batchRecordList,
                 function(dmlResult,dmlError) {
+                    console.log('processBatch: DML executed TS', Date.now());
                     console.log('processBatch: result from DML for iteration ', iteration);
                     if (dmlResult) {
-                        let actionProgress = Math.round((iteration + 1) * batchSize * 100  / soqlIdList.length);
+                        let actionProgress = 10 + Math.round((iteration + 1) * batchSize * 90  / soqlIdList.length);
                         console.log('processBatch: actionProgress evaluated ', actionProgress);
                         component.set("v.actionProgress",actionProgress);
 
@@ -1451,21 +1417,25 @@
                         console.warn('processBatch: END KO');
                     }
             });
-            console.log('processBatch: DML sent'); 
+            console.log('processBatch: DML sent TS ', Date.now()); 
         }
         else {
-            console.log('processBatch: last batch reached');
+            //console.log('processBatch: last batch reached TS ', Date.now());
             component.set("v.isRunning",false);
+            component.set("v.actionProgress",100);
 
             let refreshTab = component.get("v.refreshTab");
             console.log('processBatch: refreshTab fetched',refreshTab);
-            if (refreshTab) {
-                console.log('processBatch: END triggering refresh');
-                $A.get("e.force:refreshView").fire();
-            }
-            else {
-                console.log('processBatch: END no refresh');
-            }
+
+            setTimeout(() => { 
+                if (refreshTab) {
+                    console.log('processBatch: END triggering refresh');
+                    $A.get("e.force:refreshView").fire();
+                }
+                else {
+                    console.log('processBatch: END no refresh');
+                }
+            }, 500);
         }
     }
 })
