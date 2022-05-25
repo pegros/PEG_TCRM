@@ -29,52 +29,53 @@
 * SOFTWARE.
 ***/
 	handleInit : function(component, event, helper) {
-        console.log('handleInit: START');
+        if (!helper.SHOW_DEBUG) helper.SHOW_DEBUG = component.get('v.showDebug');
+        if (helper.SHOW_DEBUG) console.log('handleInit: START');
         helper.doInit(component,event, helper);
-        console.log('handleInit: END');	
+        if (helper.SHOW_DEBUG) console.log('handleInit: END');	
 	},
     handleDBLoaded: function(component, event, helper) {
-        console.log('handleDBLoaded: START');
+        if (helper.SHOW_DEBUG) console.log('handleDBLoaded: START');
         helper.finalizeInit(component,event,helper);
-        console.log('handleDBLoaded: END');
+        if (helper.SHOW_DEBUG) console.log('handleDBLoaded: END');
     },
     launchAction: function(component, event, helper) {
-        console.log('launchAction: START');
+        if (helper.SHOW_DEBUG) console.log('launchAction: START');
         helper.startAction(component,event,helper);
-        console.log('launchAction: END');
+        if (helper.SHOW_DEBUG) console.log('launchAction: END');
     },
     confirmAction: function(component, event, helper) {
-        console.log('confirmAction: START');
+        if (helper.SHOW_DEBUG) console.log('confirmAction: START');
         helper.doAction(component,event,helper);
-        console.log('confirmAction: END');
+        if (helper.SHOW_DEBUG) console.log('confirmAction: END');
     },
     cancelAction: function(component, event, helper) {
-        console.log('cancelAction: START');
+        if (helper.SHOW_DEBUG) console.log('cancelAction: START');
         component.set("v.actionError",null);
         component.set("v.isRunning",false);
-        console.log('cancelAction: END');
+        if (helper.SHOW_DEBUG) console.log('cancelAction: END');
     },
     handleSubmit : function(component, event, helper) {
-        console.log('handleSubmit: START');
-        console.log('handleSubmit: event params ',JSON.stringify(event.getParams()));  
+        if (helper.SHOW_DEBUG) console.log('handleSubmit: START');
+        if (helper.SHOW_DEBUG) console.log('handleSubmit: event params ',JSON.stringify(event.getParams()));  
 
         event.preventDefault();
         helper.doAction(component, event, helper);
         
-        console.log('handleSubmit: END');
+        if (helper.SHOW_DEBUG) console.log('handleSubmit: END');
     },
     handleLoad : function(component, event, helper) {
-        console.log('handleLoad: START');
+        if (helper.SHOW_DEBUG) console.log('handleLoad: START');
         console.log('handleLoad: event params ',JSON.stringify(event.getParams()));
-        console.log('handleLoad: END');        
+        if (helper.SHOW_DEBUG) console.log('handleLoad: END');        
     },
     handleFieldChange : function(component, event, helper) {
-        console.log('handleFieldChange: START');
-        console.log('handleFieldChange: event params ',JSON.stringify(event.getParams()));
+        if (helper.SHOW_DEBUG) console.log('handleFieldChange: START');
+        if (helper.SHOW_DEBUG) console.log('handleFieldChange: event params ',JSON.stringify(event.getParams()));
         let fieldName = event.getSource().get("v.fieldName");
-        console.log('handleFieldChange fieldName',fieldName);      
+        if (helper.SHOW_DEBUG) console.log('handleFieldChange fieldName',fieldName);      
         let fieldValue = event.getParams().value;
-        console.log('handleFieldChange fieldValue',fieldValue);
-        console.log('handleFieldChange: END');        
+        if (helper.SHOW_DEBUG) console.log('handleFieldChange fieldValue',fieldValue);
+        if (helper.SHOW_DEBUG) console.log('handleFieldChange: END');        
     }
 })
