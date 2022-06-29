@@ -28,6 +28,8 @@
                         description="List of sObject items on which to execute the DML operation." />
         <aura:attribute name="callback" type="Function" required="true"
                         description="Callback method called when query results are returned. 2 object parameters expected for this callback : result and error."/>
+        <aura:attribute name="bestEffort" type="Boolean" required="false" default="false"
+                        description="Sets allOrNone flag to none in the DML."/>
     </aura:method>
     
     <!-- Work in Progress -->

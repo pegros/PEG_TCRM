@@ -71,9 +71,11 @@
                 records.</li>
         <li><code>Batch Size</code> settingh a max. number of rows per <code>insert</code> operation,
                 the component iterating until all target records have been inserted.</li>
+        <li><code>Best effort mode</code> to execute the DML in best effort mode (i.e. with the allOrNone flag set to false)
+                to actually insert all records that may be inserted, silently ignoring errors on others (e.g. validation errors).</li>
         <li><code>Refresh Tab</code> to force a refresh of the current tab after addition
-                of new campaign members (so that the standard "campaign member" component
-                gets automatically updated.</li>
+                    of new campaign members (so that the standard "campaign member" component
+                    gets automatically updated.</li>
     </ul>
 
     <p>This component relies on the following components:</p>

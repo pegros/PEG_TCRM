@@ -18,6 +18,9 @@
     <aura:attribute name="actionMessage"    type="String"
                     access="global"
                     description="Message displayed in the action popup." />
+    <aura:attribute name="isBestEffort" type="Boolean"
+                    access="global"     default="false"
+                    description="Flag to execute the action in best effort mode (i.e. with silent errors in DML)."/>
     <aura:attribute name="showBorder"       type="Boolean"
                     access="global"         default="false"
                     description="Flag to activate card border."/>
@@ -25,6 +28,7 @@
     <aura:attribute name="showDebug"        type="Boolean"
                     access="global"         default="false"
                     description="Flag to activate debug mode."/>
+
 
     <!-- Component Dashboard Configuration -->
     <aura:attribute name="dashboardName"    type="String"
@@ -368,7 +372,8 @@
                                 isLoaded="{!v.dbReady}"
                                 showTitle="{#v.showTitle}"
                                 showSharing="{#v.showSharing}"
-                                showHeader="{#v.showHeader}" />
+                                showHeader="{#v.showHeader}" 
+                                openLinksInNewWindow="false"/>
         </aura:if>
 
     </lightning:card>

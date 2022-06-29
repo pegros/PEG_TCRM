@@ -78,49 +78,53 @@
         $A.enqueueAction(queryAction);
         //console.log('runExecQuery: queryAction sent');
 	},
-    runExecDML : function(component, dmlOperation, itemList, callback) {
+    runExecDML : function(component, dmlOperation, itemList, callback, bestEffort) {
         //console.log('runExecDML: START');
-        
+
         if ((! callback) || (! dmlOperation) || (! itemList)) {   
             console.error('runExecDML: missing parameters');
             return;
         }
-        
-        var dmlAction = component.get("c.executeDML");
+
+        //console.log('runExecDML: bestEffort set to ', bestEffort);
+        let dmlActionName = (bestEffort ? "c.executeDMLbe" : "c.executeDML");
+        //console.log('runExecDML: dmlActionName set to ', dmlActionName);
+        var dmlAction = component.get(dmlActionName);
         dmlAction.setParams({
             "itemList": itemList,
             "operation": dmlOperation
         });
         //console.log('runExecDML: dmlAction params set',dmlAction.getParams());
-        
+
         var callbackAction = callback;
         dmlAction.setCallback(this, function(response){
             //console.log('runExecDML: response received',response);
-            
+
             if (response.getState() == "SUCCESS"){
                 //console.log('runExecDML: OK response received',response.getReturnValue());
                 callback(response.getReturnValue(),null);
-            } else {
+            }
+            else {
                 console.warn('runExecDML: KO response received',response.getError());
                 callback(null,response.getError());
             }
             //console.log('runExecDML: END');
         });
         //console.log('runExecDML: queryAction set',dmlAction);
-                
+
         $A.enqueueAction(dmlAction);
         //console.log('runExecDML: queryAction sent');
      },
     // Work in Progress
      runExecMultiQuery : function(component,queryList,setStorable,setBackground,callback) {
         //console.log('runExecMultiQuery: START');
-       
+
         if ((! callback) || (! queryList)) {   
             console.error('runExecMultiQuery: missing parameters',
                           {"queryList":queryList,"callback":callback});
             return;
         }
-        
+
         var queryAction = component.get("c.executeMultiQuery");
         queryAction.setParams({
             "queries": queryList

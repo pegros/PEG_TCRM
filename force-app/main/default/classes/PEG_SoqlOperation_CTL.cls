@@ -199,10 +199,75 @@ public with sharing class PEG_SoqlOperation_CTL {
              }
         }
         return itemList;
-     } catch (Exception e) {
+    }
+    catch (Exception e) {
         System.debug('executeDML : returning error ' + e.getMessage());
         if (e.getTypeName() == 'System.DmlException') {
-            System.debug('executeDML : returning DML Excption ' + ((System.DmlException)e).getDmlMessage(0));
+            System.debug('executeDML : returning DML Exception ' + ((System.DmlException)e).getDmlMessage(0));
+            throw new AuraHandledException(((System.DmlException)e).getDmlMessage(0));
+        }
+        throw new AuraHandledException(e.getMessage());
+    }
+ }
+
+ @AuraEnabled
+ public static list<sObject> executeDMLbe(list<sObject> itemList, string operation) {
+    System.debug('executeDMLbe : itemList provided ' + itemList);
+    System.debug('executeDMLbe : operation provided ' + operation); 
+
+    try {
+        switch on operation {
+            when 'insert' {
+                Database.SaveResult[] results = database.insert(itemList,false);
+                System.debug('executeDMLbe : itemList inserted ' + results);
+                for (Database.SaveResult iter : results) {
+                    if (!iter.isSuccess()) {
+                        System.debug('executeDMLbe : issue found on ' + iter.getId() + ' -> ' + iter.getErrors());                 
+                    }
+                }
+            }
+            when 'update' {
+                Database.SaveResult[] results = database.update(itemList,false);
+                System.debug('executeDMLbe : itemList updated ' + results);
+                for (Database.SaveResult iter : results) {
+                    if (!iter.isSuccess()) {
+                        System.debug('executeDMLbe : issue found on ' + iter.getId() + ' -> ' + iter.getErrors());                 
+                    }
+                }
+            }
+            /*
+            when 'upsert' {
+                upsert itemList;
+                System.debug('executeDML : itemList upserted ' + itemList);
+            }
+            */
+            when 'delete' {
+                Database.DeleteResult[] results = database.delete(itemList,false);
+                System.debug('executeDMLbe : itemList deleted ' + results);
+                for (Database.DeleteResult iter : results) {
+                    if (!iter.isSuccess()) {
+                        System.debug('executeDMLbe : issue found on ' + iter.getId() + ' -> ' + iter.getErrors());                 
+                    }
+                }
+            }
+            /*
+            when 'undelete' {
+                undelete itemList;
+                System.debug('executeDML : itemList undeleted ' + itemList);
+            }
+            */
+            when else {
+                StringException  errInvalid = new StringException();
+                errInvalid.setMessage('Unknown or unsupported operation (' + operation + ') requested!');
+                throw errInvalid;
+            }
+       }
+       return itemList;
+     }
+     catch (Exception e) {
+        System.debug('executeDML : returning error ' + e.getMessage());
+        if (e.getTypeName() == 'System.DmlException') {
+            System.debug('executeDML : returning DML Exception ' + ((System.DmlException)e).getDmlMessage(0));
             throw new AuraHandledException(((System.DmlException)e).getDmlMessage(0));
         }
         throw new AuraHandledException(e.getMessage());

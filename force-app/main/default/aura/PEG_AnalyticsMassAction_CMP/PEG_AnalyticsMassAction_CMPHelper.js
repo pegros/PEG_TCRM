@@ -1389,6 +1389,9 @@
             if (helper.SHOW_DEBUG) console.log('processBatch: actionProgress evaluated ', actionProgress);
             component.set("v.actionProgress",actionProgress);
 
+            let isBestEffort = component.get("v.isBestEffort");
+            if (helper.SHOW_DEBUG) console.log('processBatch: triggering DML in best effort mode ? ', isBestEffort);
+
             component.find('soqlUtil').runDML(
                 'insert',
                 batchRecordList,
@@ -1417,7 +1420,8 @@
                         //component.set("v.actionError",JSON.stringify(dmlError));
                         console.warn('processBatch: END KO');
                     }
-            });
+                },
+                isBestEffort);
             if (helper.SHOW_DEBUG) console.log('processBatch: DML sent TS ', Date.now()); 
         }
         else {

@@ -80,6 +80,10 @@
                         default="0"
                         description="Batch size for the insertion operation (0 value meaning that all rows are inserted at once)."/>
 
+    <design:attribute   name="isBestEffort"
+                        label="Best effort mode ?"
+                        default="false"
+                        description="Flag to execute the action in best effort mode (with silent errors in DML)." />
     <design:attribute   name="refreshTab"
                         label="Refresh Tab after Add?"
                         default="false"

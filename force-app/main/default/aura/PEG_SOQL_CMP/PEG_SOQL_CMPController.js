@@ -66,7 +66,7 @@
         //console.log('doRunQuery: END');
     },
     doRunDML : function(component, event, helper) {
-        //console.log('doRunDML: START');
+        console.log('doRunDML: START');
         
         var methodArg = event.getParam('arguments');
         //console.log('doRunDML: methodArg fetched',JSON.stringify(methodArg));
@@ -102,9 +102,10 @@
         helper.runExecDML(component,
                           methodArg.dmlOperation,
                           methodArg.itemList,
-                          methodArg.callback);
-        
-        //console.log('doRunDML: END');
+                          methodArg.callback,
+                          methodArg.bestEffort);
+
+        console.log('doRunDML: END');
     },
     // Work in Progress
     doRunMultiQuery : function(component, event, helper) {
